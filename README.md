@@ -1,6 +1,5 @@
-<li> <img src="https://raw.githubusercontent.com/metrue/Seal/master/screenshots/home.png" alt="home" style="width: 300px;"/>
-
-<li> <img src="https://raw.githubusercontent.com/metrue/Seal/master/screenshots/post.png" alt="home" style="width: 300px;"/>
+<img src="https://raw.githubusercontent.com/metrue/Seal/master/screenshots/home.png" alt="home" style="width: 300px;"/>
+<img src="https://raw.githubusercontent.com/metrue/Seal/master/screenshots/post.png" alt="home" style="width: 300px;"/>
 
 # Seal
 

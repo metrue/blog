@@ -1,5 +1,6 @@
-<img src="https://raw.githubusercontent.com/***REMOVED***/Seal/master/screenshots/home.png" alt="home" style="width: 100px;"/>
-<img src="https://raw.githubusercontent.com/***REMOVED***/Seal/master/screenshots/post.png" alt="home" style="width: 100px;"/>
+<li> <img src="https://raw.githubusercontent.com/***REMOVED***/Seal/master/screenshots/home.png" alt="home" style="width: 300px;"/>
+
+<li> <img src="https://raw.githubusercontent.com/***REMOVED***/Seal/master/screenshots/post.png" alt="home" style="width: 300px;"/>
 
 # Seal
 

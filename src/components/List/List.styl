@@ -1,0 +1,27 @@
+@require '../base'
+
+.list-view
+  margin 0 20px
+  ol,
+  ul
+    padding 0
+    list-style none
+
+.list-item
+  position relative
+  margin-bottom 50px
+
+.item-title
+  display inline-block
+  margin-bottom 10px
+  font-size fontSize + 2
+  color textColor
+  &:hover
+    color linkColor
+
+.item-date
+  display inline-block
+  font-size fontSize - 2
+  color metaColor
+  border-top 1px solid #ddd
+  padding-top 12px

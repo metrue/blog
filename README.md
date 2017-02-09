@@ -1,5 +1,5 @@
-![home](https://raw.githubusercontent.com/***REMOVED***/Seal/master/screenshots/home.png)
-![post](https://raw.githubusercontent.com/***REMOVED***/Seal/master/screenshots/post.png)
+<img src="https://raw.githubusercontent.com/***REMOVED***/Seal/master/screenshots/home.png" alt="home" style="width: 250px;"/>
+<img src="https://raw.githubusercontent.com/***REMOVED***/Seal/master/screenshots/post.png" alt="home" style="width: 250px;"/>
 
 # Seal
 

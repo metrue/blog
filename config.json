@@ -2,5 +2,5 @@
   "title": "minghe",
   "domain": "minghe.me",
   "postsDir": "posts",
-  "outputDir": "../metrue.github.io/"
+  "outputDir": "public"
 }

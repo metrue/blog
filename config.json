@@ -2,5 +2,5 @@
   "title": "minghe",
   "domain": "minghe.me",
   "postsDir": "posts",
-  "outputDir": "../***REMOVED***.github.io/"
+  "outputDir": "public"
 }

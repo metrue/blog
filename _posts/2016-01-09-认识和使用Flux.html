@@ -1,0 +1,145 @@
+<html server-rendered="true"><head><meta charset="UTF-8"> <meta name="viewport" content="initial-scale=1,maximum-scale=1,minimum-scale=1,width=device-width,user-scalable=no"> <meta name="renderer" content="webkit"> <meta name="theme-color" content="#ffffff"> <link href="/css/build.HomePage.css" rel="stylesheet"> <link href="/css/build.PostPage.css" rel="stylesheet"> <title> Minghe </title></head><section class="post-view"><h1 class="post-title">
+    认识和使用Flux
+    <time pubdate="pubdate" class="post-date"></time></h1> <article><p>Flux 不是一种框架也不是一个库，它是实现 React 单向数据流的一种新架构。在 Facebook 内部和 React 配合使用。Facebook 提供了一个 Dispatcher 库项目，dispatcher 是一种全局的 pub/sub handler，而 handler 则会将 payloads 广播到注册的回调里。 一种典型的 Flux 框架会使用 NodoJS 的 EventEmitter 模块来构建事件系统来管理应用的状态.  通过了解各个单独的模块，我们可以更加了解 Flux 架构.</p>
+<ul>
+<li>Actions: 一些 Helper methods 来协助数据向 Dispatcher 的传递.</li>
+<li>Dispatcher: 接收 actions, 然后广播 payloads 到注册的回调。</li>
+<li>Stores: 包含那些关于应用状态和逻辑，注册到 dispatcher 的容器.</li>
+<li>Controller Views: React 组件，从 stores 中获取 state，然后通过<br>  props 传递到子组件.</li>
+</ul>
+<p><img src="https://raw.githubusercontent.com/***REMOVED***/minghe.me/master/images/flux/flux-modules.png" alt="Flux模块示意图"></p>
+<p>那么我们的 API 和上图是什么关系呢，当我们需要和外部 (比如后端的数据API) 相互作用的时候，我们该怎么办呢，<a href="https://scotch.io/tutorials/getting-to-know-flux-the-react-js-architecture">这篇文章</a> 说在 Actions 中引入数据到整个 Flux FLow 是一种最佳方式.</p>
+<h2 id="dispatcher">Dispatcher</h2><p>Dispatcher 是整个应用的中心枢纽, 管理着整个过程。 它接收 actions 然后 dispatch actions 和数据到注册的回调中。 Dispatcher 将 payload 广播到所有注册的回调中，而且可以以特定的顺序去调用那些回调，而且可以在执行之前进行等待。你的应用中只有一个 dispatcher， 它扮演着应用的中心枢纽。</p>
+<pre><code class="lang-undefined">
+<span class="token keyword">var</span> Dispathcer <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'flux'</span><span class="token punctuation">)</span><span class="token punctuation">.</span>Dispatcher<span class="token punctuation">;</span>
+<span class="token keyword">var</span> AppDispatcher <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Dispatcher</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+AppDispatcher<span class="token punctuation">.</span>handleViewAction <span class="token operator">=</span> <span class="token keyword">function</span><span class="token punctuation">(</span>action<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">this</span><span class="token punctuation">.</span><span class="token function">dispatcher</span><span class="token punctuation">(</span><span class="token punctuation">{</span>
+    source<span class="token punctuation">:</span> <span class="token string">'VIEW_ACTION'</span><span class="token punctuation">,</span>
+    action<span class="token punctuation">:</span> action
+  <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+module<span class="token punctuation">.</span>exports <span class="token operator">=</span> AppDispatcher<span class="token punctuation">;</span></code></pre><p>在上面的例子中，我们就创建了一个dispatcher, 然后创建了一个handleViewAction 方法。 当你想区分是view触发的actios还是 server API 触发的actions的时候，这种抽象是很有用的。 我们的方法调用 dispatch 方法，它将action payload 广播到它注册的回调里。 这个方法可以在 Stores 中发生，并且在一个 state 更新中产生结果。</p>
+<p>整体图如下：<br><img src="https://raw.githubusercontent.com/***REMOVED***/minghe.me/master/images/flux/dispatcher.png" alt="Dispatcher dispatch"></p>
+<p>Dispatcher 最cool的地方是它可以在我们的 Stores 里面定义依赖 (Dependencies).  所以如果我们的应用里有一部分依赖于其他部分先更新，为了正确的render，Dispatcher 的 waitFor 方法会特别有用。 为了利用这个特性，我们需要保存 Dispatcher 的注册方法(registration)的返回值，所以我们可以在我们的 Store 中这么做。</p>
+<pre><code class="lang-undefined">  ShoeStore<span class="token punctuation">.</span>dispatcherIndex <span class="token operator">=</span> AppDispatcher<span class="token punctuation">.</span><span class="token function">register</span><span class="token punctuation">(</span>payload<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+
+  <span class="token punctuation">}</span><span class="token punctuation">;</span></code></pre><p>在我们的 Store 中，当我们处理分发过来的 action, 我们可以使用 Dispatcher 的 waitFor 方法去保证  ShoeStore 被更新。</p>
+<pre><code class="lang-undefined"><span class="token keyword">case</span> <span class="token string">'BUY_SHOES'</span><span class="token punctuation">:</span>
+  AppDispatcher<span class="token punctuation">.</span><span class="token function">waitFor</span><span class="token punctuation">(</span><span class="token punctuation">[</span>ShoeStore<span class="token punctuation">.</span>dispatcherIndex<span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    CheckoutStore<span class="token punctuation">.</span><span class="token function">purchaseStoes</span><span class="token punctuation">(</span>ShoeStore<span class="token punctuation">.</span><span class="token function">getSeletedShoes</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre><h2 id="stores">Stores</h2><p>在 Flux 中， Stores 管理着我们应用的状态。也就是 Store<br>负责管理数据，数据的获取，以及回调函数的 disapather.</p>
+<pre><code class="lang-undefined">
+<span class="token keyword">var</span> AppDispatcher <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'../dispatcher/AppDispatcher'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">var</span> ShoeConstants <span class="token operator">=</span> <span class="token function">reuquire</span><span class="token punctuation">(</span><span class="token string">'../constants/ShoeConstants'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">var</span> EventEmitter <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'events'</span><span class="token punctuation">)</span><span class="token punctuation">.</span>EventEmitter<span class="token punctuation">;</span>
+<span class="token keyword">var</span> merge <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'react/lib/merge'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">var</span> _shoes <span class="token operator">=</span> <span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+<span class="token keyword">function</span> <span class="token function">loadShoes</span><span class="token punctuation">(</span>data<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  _shoes <span class="token operator">=</span> data<span class="token punctuation">.</span>shoes<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">var</span> ShoeStore <span class="token operator">=</span> <span class="token function">merge</span><span class="token punctuation">(</span>EventEmitter<span class="token punctuation">.</span>prototype<span class="token punctuation">,</span> <span class="token punctuation">{</span>
+  getShoes<span class="token punctuation">:</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">return</span> _shoes<span class="token punctuation">;</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+
+  emitChange<span class="token punctuation">:</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">this</span><span class="token punctuation">.</span><span class="token function">emit</span><span class="token punctuation">(</span><span class="token string">'change'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+
+  addChangeListener<span class="token punctuation">:</span> <span class="token keyword">function</span><span class="token punctuation">(</span>callback<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">this</span><span class="token punctuation">.</span><span class="token function">on</span><span class="token punctuation">(</span><span class="token string">'change'</span><span class="token punctuation">,</span> callback<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+
+  removeChangeListener<span class="token punctuation">:</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">this</span><span class="token punctuation">.</span><span class="token function">removeListener</span><span class="token punctuation">(</span><span class="token string">'change'</span><span class="token punctuation">,</span> callback<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+AppDispatcher<span class="token punctuation">.</span><span class="token function">register</span><span class="token punctuation">(</span><span class="token keyword">function</span><span class="token punctuation">(</span>payload<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">var</span> action <span class="token operator">=</span> payload<span class="token punctuation">.</span>action<span class="token punctuation">;</span>
+  <span class="token keyword">var</span> text<span class="token punctuation">;</span>
+
+  <span class="token keyword">switch</span><span class="token punctuation">(</span>action<span class="token punctuation">.</span>actionType<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">case</span> ShoeConstants<span class="token punctuation">.</span>LOAD_SHOES<span class="token punctuation">:</span>
+      <span class="token function">loadShoes</span><span class="token punctuation">(</span>action<span class="token punctuation">.</span>data<span class="token punctuation">)</span><span class="token punctuation">;</span>
+      <span class="token keyword">break</span><span class="token punctuation">;</span>
+    <span class="token keyword">default</span><span class="token punctuation">:</span>
+      <span class="token keyword">return</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+
+  ShoeStore<span class="token punctuation">.</span><span class="token function">emitChange</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+  <span class="token keyword">return</span> <span class="token boolean">true</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+module<span class="token punctuation">.</span>exports <span class="token operator">=</span> ShoeStore<span class="token punctuation">;</span></code></pre><p>上面的代码我们使用了 NodeJS 的  EventEmitter, 它让我们可以监听和广播我们的事件. 然后我们的 Views/Components 可以基于这些事件去更新。 因为我们的View Controller 监听这些事件，所以发射这些改变的事件可以让我们的 View Controller 知道我们的应用 state 已经改变，可以去获取这些状态然后保持应用的更新。 与此同时，我们也屌用了 AppDispatcher 的 register 我们的回调，着意味着我们的 Store 现在监听了 AppDispatcher 的广播。而 switch 语句则判定所到来的广播是否需要响应的action去承担。如果有相应的action响应，一个事件就会被发射，那些监听这个事件的view就会更新它们的states.</p>
+<p><img src="https://raw.githubusercontent.com/***REMOVED***/minghe.me/master/images/flux/store.png" alt="Store, Dispatch, Action, Controller View"></p>
+<p>而public方法 getShoes 则是获取所有的shoes放到 _shoes 对象中，然后在我们的组件中使用这些数据.  这只是一个简单的例子，复杂的逻辑我们可以放到这里，而不是 views，可以让我们的代码更佳整洁.</p>
+<h2 id="action-creator-&amp;-actions">Action Creator &amp; Actions</h2><p>Action Creators 是发送 actions 到 Dispatcher 的一组方法的集合, Actions 是通过 dispatcher 传送的真正的 payloads; Facebook 这样使用 Action 的， 一个action包含action type, 和 action data, action type 是常量(constants), 定义了什么action即将发生，而action data 则是action的数据。对于注册了的回调函数来说，action type 决定了哪一个回调函数去处理，而action data 则成为了回调函数的输入参数。</p>
+<pre><code class="lang-undefined"> <span class="token keyword">var</span> keyMirror <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'react/lib/keyMirror'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+ module<span class="token punctuation">.</span>exports <span class="token operator">=</span> <span class="token function">keyMirror</span><span class="token punctuation">(</span><span class="token punctuation">{</span>
+    LOAD_SHOES<span class="token punctuation">:</span> <span class="token keyword">null</span>
+ <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre><p>我们使用 keyMirror 来定义我们的我们的Constants, 看下面的例子你就知道 keyMirror 的基本功能了。</p>
+<pre><code class="lang-undefined"><span class="token keyword">var</span> keyMirror <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'keymirror'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+key <span class="token operator">=</span> <span class="token function">keyMirror</span><span class="token punctuation">(</span><span class="token punctuation">{</span>NAME<span class="token punctuation">:</span> <span class="token keyword">null</span><span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+key <span class="token operator">-</span><span class="token operator">></span> <span class="token punctuation">{</span>NAME<span class="token punctuation">:</span> <span class="token string">'NAME'</span><span class="token punctuation">}</span></code></pre><p>我们来看看相应的 Action Creator 怎么定义吧:</p>
+<pre><code class="lang-undefined"><span class="token keyword">var</span> AppDispatcher <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'../dispatcher/AppDispatcher'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">var</span> ShoeStoreConstants <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'../constants/ShoeStoreConstants'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">var</span> ShoeStoreActions <span class="token operator">=</span> <span class="token punctuation">{</span>
+  loadShoes<span class="token punctuation">:</span> <span class="token keyword">function</span><span class="token punctuation">(</span>data<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    AppDispatcher<span class="token punctuation">.</span><span class="token function">handleAction</span><span class="token punctuation">(</span><span class="token punctuation">{</span>
+      actionType<span class="token punctuation">:</span> ShoeStoreConstants<span class="token punctuation">.</span>LOAD_SHOES<span class="token punctuation">,</span>
+      data<span class="token punctuation">:</span> data
+    <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+
+module<span class="token punctuation">.</span>exports <span class="token operator">=</span> ShoeStoreActions<span class="token punctuation">;</span></code></pre><p>在上面的代码中，我们创建了一个loadStores的action，通过 dispatcher 广播这个 action， 这样 ShoeStore 里面就会听到这个事件，然后调用相应的方法去装载一些shoes。</p>
+<h2 id="controller-views">Controller Views</h2><p>Controller Views 就是一些 React 组件，这些组件监听事件的改变，然后从Stores获取应用的状态，然后通过props传递数据到子组件中。</p>
+<p><img src="https://raw.githubusercontent.com/***REMOVED***/minghe.me/master/images/flux/controller-view.png" alt="Store Controller View"></p>
+<pre><code class="lang-undefined"><span class="token keyword">var</span> React <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'react'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token keyword">var</span> ShoesStore <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'../stores/ShoeStore'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+<span class="token keyword">function</span> <span class="token function">getAppState</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">return</span> <span class="token punctuation">{</span>
+    shoes<span class="token punctuation">:</span> ShoeStore<span class="token punctuation">.</span><span class="token function">getShoes</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">var</span> ShoeStoreApp <span class="token operator">=</span> React<span class="token punctuation">.</span><span class="token function">creteClass</span><span class="token punctuation">(</span><span class="token punctuation">{</span>
+  getInitialState<span class="token punctuation">:</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">return</span> <span class="token function">getAppState</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+
+  componentDidMount<span class="token punctuation">:</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    ShoeStore<span class="token punctuation">.</span><span class="token function">addChangeListener</span><span class="token punctuation">(</span><span class="token keyword">this</span><span class="token punctuation">.</span>_onChange<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+
+  componentWillUnmount<span class="token punctuation">:</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    ShoesStore<span class="token punctuation">.</span><span class="token function">removeChangeListener</span><span class="token punctuation">(</span><span class="token keyword">this</span><span class="token punctuation">.</span>_onChange<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+
+  render<span class="token punctuation">:</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token operator">&lt;</span>ShoeStore shoes<span class="token operator">=</span><span class="token punctuation">{</span><span class="token keyword">this</span><span class="token punctuation">.</span>state<span class="token punctuation">.</span>shoes<span class="token punctuation">}</span><span class="token operator">/</span><span class="token operator">></span>
+  <span class="token punctuation">}</span><span class="token punctuation">,</span>
+
+  _onChange<span class="token punctuation">:</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">this</span><span class="token punctuation">.</span><span class="token function">setState</span><span class="token punctuation">(</span><span class="token function">getAppState</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+module<span class="token punctuation">.</span>exports <span class="token operator">=</span> ShoeStoreApp<span class="token punctuation">;</span></code></pre><p>在上面的例子中，我们使用 addChangeListener 去监听事件的改变，然后更新应用的状态当接收到事件的时候。 我们的 Stores 持有我们应用的 state, 我们使用 Stores 中的 Public 方法获取数据，然后set 应用的 state.</p>
+<h2 id="放在一起">放在一起</h2><p>我们已经对 Flux 每一个单独的模块进行了分析了解，我们现在对于 Flux 架构如何工作有了一个更好的认识了，通过下面这幅图，也许我们可以更加清晰了。<br><img src="https://raw.githubusercontent.com/***REMOVED***/minghe.me/master/images/flux/flux-work-flow.png" alt="Flux 架构工作流"></p>
+<p>至此，我相信你应该可以在你下一个 React 项目中使用 Flux 架构了。</p>
+<h2 id="参考文献">参考文献</h2><p><a href="https://scotch.io/tutorials/getting-to-know-flux-the-react-js-architecture">Getting To Know Flux, the React.js Architecture</a></p>
+</article></section><footer class="footer">
+  Copyright ©2014-2017 <a href="http://minghe.me"> minghe.me</a> | Powered by <a href="https://github.com/***REMOVED***/Seal">Seal</a> on top of <a href="https://vuejs.org" target="_blank">Vue.js</a></footer></html>

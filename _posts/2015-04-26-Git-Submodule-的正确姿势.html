@@ -1,0 +1,38 @@
+<html server-rendered="true"><head><meta charset="UTF-8"> <meta name="viewport" content="initial-scale=1,maximum-scale=1,minimum-scale=1,width=device-width,user-scalable=no"> <meta name="renderer" content="webkit"> <meta name="theme-color" content="#ffffff"> <link href="/css/build.HomePage.css" rel="stylesheet"> <link href="/css/build.PostPage.css" rel="stylesheet"> <title> Minghe </title></head><section class="post-view"><h1 class="post-title">
+    Git-Submodule-的正确姿势
+    <time pubdate="pubdate" class="post-date"></time></h1> <article><p>大多数时候我们的工程中都会使用到其他的项目，也许是自己写的专用模块，也许是第三方的库。如果在自己的工程中对这些项目进行良好的管理呢，在使用 Git 进行版本控制的项目中，我们可以使用 Git Submodule 来进行优雅的管理。</p>
+<h3 id="使用方法">使用方法</h3><ul>
+<li>添加 submodule</li>
+</ul>
+<p>假如我们想在已有工程中添加第三方项目，我们可以</p>
+<pre><code class="lang-undefined">  git submodule add repo_url</code></pre><p>初次使用 git submodule 的话，我们可以看到我们的工作目录下会有 .gitmodules, 这里记录的是我们工程用到的项目的 remote url， 以及他们的路径信息。为了统一管理我们的submodules，我们一般会建立一个统一的目录来存放这些submodules。所以一般可以这样做。</p>
+<pre><code class="lang-undefined">  mkdir submodules
+  cd submodules
+  git submodule add repo_url</code></pre><p>这样你可以看到你的 submodules 目录中已经自动 pull 出来了哪些 submodules 的代码，但是值得注意的，submodule 项目和我们的工程目录本质上是独立的 git repo。我们的工程只是记录他所以来的项目的版本信息而已, 你可以通过如下命令获取相关信息</p>
+<pre><code class="lang-undefined">  git submodule</code></pre><ul>
+<li>更新 submodule</li>
+</ul>
+<p>为了和 submodule 项目保持同步更新，我们需要在主项目进行</p>
+<pre><code class="lang-undefined">  git pull</code></pre><p>之后进行一次</p>
+<pre><code class="lang-undefined">  git submodule update</code></pre><ul>
+<li>开发 submodule</li>
+</ul>
+<p>有时候我们是在工程中直接对 submodule 进行开发的。但是也许你会发现当你 cd 到你的 submodule 的时候，你并不是在 master 分支上，而是处于一种游离的状态 &#39;detached HEAD ...&#39;, 所以正确的做法是</p>
+<pre><code class="lang-undefined">  git checkout master # 或者其他开发分支
+  git commit <span class="token operator">-</span>m <span class="token string">"message"</span> # 开发了之后可以提交
+  git push</code></pre><p>那么如果忘记了切换到你想要的分支而且你已经做了更新呢， 你可以这样</p>
+<pre><code class="lang-undefined">  git checkout master
+  git cherry<span class="token operator">-</span>pick commit_id # 可能会有conflict，如果有，就先解决
+  git push</code></pre><ul>
+<li>删除 submodule</li>
+</ul>
+<p>很遗憾的是，Git 并没有 git submodule rm 这样的操作，而且你单独的删掉 submodule 的子目录也是错误，正确的做法是</p>
+<pre><code class="lang-undefined">  git rm <span class="token operator">--</span>cached pato_to_submodule
+  rm <span class="token operator">-</span>rf path_to_submodule
+
+  然后再 <span class="token punctuation">.</span>gitmodules 中删掉相应信息<span class="token punctuation">.</span>
+  最后还得在 <span class="token punctuation">.</span>git<span class="token operator">/</span>config 中删掉其相关内容<span class="token punctuation">.</span></code></pre><h3 id="最后">最后</h3><p>当然很多时候，我们clone别人的项目的时候，如果别人也是使用了 git submodule 的话，我们需要通过下面的方法来 pull 所有的 submodules</p>
+<pre><code class="lang-undefined">  git submodule init
+  git submodule update <span class="token operator">--</span>recursive</code></pre><p>当然也可以直接合并成</p>
+<pre><code class="lang-undefined">  git submodule update <span class="token operator">--</span>init <span class="token operator">--</span>recursive</code></pre></article></section><footer class="footer">
+  Copyright ©2014-2017 <a href="http://minghe.me"> minghe.me</a> | Powered by <a href="https://github.com/***REMOVED***/Seal">Seal</a> on top of <a href="https://vuejs.org" target="_blank">Vue.js</a></footer></html>

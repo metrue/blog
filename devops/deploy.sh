@@ -3,7 +3,7 @@
 host='root@139.162.72.153'
 ssh ${host} <<END
   docker rmi \$(docker images --filter "dangling=true" -q --no-trunc)
-  rm -rf /tmp/asmalltalk.com
+  rm -rf /tmp/minghe.me
   git clone git@github.com:***REMOVED***/***REMOVED***.github.io.git /tmp/minghe.me
   cd /tmp/minghe.me
   docker build -f devops/dockerfile.nginx -t seal .

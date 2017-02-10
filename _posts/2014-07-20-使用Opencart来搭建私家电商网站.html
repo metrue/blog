@@ -1,0 +1,43 @@
+<html server-rendered="true"><head><meta charset="UTF-8"> <meta name="viewport" content="initial-scale=1,maximum-scale=1,minimum-scale=1,width=device-width,user-scalable=no"> <meta name="renderer" content="webkit"> <meta name="theme-color" content="#ffffff"> <link href="/css/build.HomePage.css" rel="stylesheet"> <link href="/css/build.PostPage.css" rel="stylesheet"> <title> Minghe </title></head><section class="post-view"><h1 class="post-title">
+    使用Opencart来搭建私家电商网站
+    <time pubdate="pubdate" class="post-date"></time></h1> <article><p>本文主要介绍在Mac环境下如何构建LAMP环境，然后基于Opencart来构建私家电商网站.</p>
+<h3 id="1.-lamp-on-mac">1. LAMP on Mac</h3><p>Mac 作为Unix系列最耀眼的孩子之一，拥有Unix的优良血统，这点真的很重要，也就是因为这一点，Mac和Linux一样成为程序员的最佳工作平台。好吧，闲话依然少叙，最近准备接一个小项目，是一个电商网站，我们准备基于<a href="http://www.opencart.com/">Opencart</a>,由于Opencart本身是 php 的框架，所以*AMP(Linux/Unix, Apache, MySql, PHP)是必须的基础架构了，所以让们来看看Mac下如何安装AMP吧。</p>
+<h4 id="apache">Apache</h4><p>Mac 自带有Apache,所以做一些简单的设置，就可以满足我们的需求了.</p>
+<pre><code class="lang-undefined">$  apachectl <span class="token operator">-</span>v
+Server version<span class="token punctuation">:</span> Apache<span class="token operator">/</span><span class="token number">2.2</span><span class="token punctuation">.</span><span class="token number">26</span> <span class="token punctuation">(</span>Unix<span class="token punctuation">)</span>
+Server built<span class="token punctuation">:</span>   Dec <span class="token number">10</span> <span class="token number">2013</span> <span class="token number">22</span><span class="token punctuation">:</span><span class="token number">09</span><span class="token punctuation">:</span><span class="token number">38</span></code></pre><p>Apache 的默认主目录是在home，我们可以设定在适合我们方便开发的地方。</p>
+<pre><code class="lang-undefined">$ cd <span class="token operator">~</span><span class="token operator">/</span>
+$ mkdir Sites</code></pre><p>然后修改/etc/apache2/httpd.conf让主目录为~/Sites</p>
+<pre><code class="lang-undefined">DocumentRoot “<span class="token operator">/</span>Users<span class="token operator">/</span>huangmh<span class="token operator">/</span>Sites<span class="token operator">/</span>”
+<span class="token operator">&lt;</span>Directory “<span class="token operator">/</span>Users<span class="token operator">/</span>huangmh<span class="token operator">/</span>Sites”<span class="token operator">></span>
+     Options Indexes MultiViews
+     AllowOverride All
+     Order allow<span class="token punctuation">,</span>deny
+     Allow <span class="token keyword">from</span> all
+<span class="token operator">&lt;</span><span class="token operator">/</span>Directory<span class="token operator">></span></code></pre><p>然后重启我们的Apache就好了。</p>
+<pre><code class="lang-undefined">$ sudo apachectl restart</code></pre><h4 id="php">PHP</h4><p>Mac 本身也自带了php了，很多人为了良好的控制版本，都采用<a href="http://brew.sh/">brew</a> 来重新安装，brew 这是包管理工具中的皎皎者，太好用了，所以Ruby的社区是最才华横溢的，对，没错，我就是Ruby的忠诚粉丝。但是我们使用Mac 本身自带的php就好了。但是值得注意的是，如果安装php的一些拓展的话，最好才看一下php的版本。</p>
+<pre><code class="lang-undefined">$ php <span class="token operator">-</span>v
+ PHP <span class="token number">5.4</span><span class="token punctuation">.</span><span class="token number">24</span> <span class="token punctuation">(</span>cli<span class="token punctuation">)</span> <span class="token punctuation">(</span>built<span class="token punctuation">:</span> Jan <span class="token number">19</span> <span class="token number">2014</span> <span class="token number">21</span><span class="token punctuation">:</span><span class="token number">32</span><span class="token punctuation">:</span><span class="token number">15</span><span class="token punctuation">)</span>
+ Copyright <span class="token punctuation">(</span>c<span class="token punctuation">)</span> <span class="token number">1997</span><span class="token operator">-</span><span class="token number">2013</span> The PHP Group
+ Zend Engine v2<span class="token number">.4</span><span class="token punctuation">.</span><span class="token number">0</span><span class="token punctuation">,</span> Copyright <span class="token punctuation">(</span>c<span class="token punctuation">)</span> <span class="token number">1998</span><span class="token operator">-</span><span class="token number">2013</span> Zend Technologies</code></pre><p>当发现自己安装的有些模块没有load的好的话，那么可以在查看/etc/php.ini文件是否以及load相应的.so文件.</p>
+<h4 id="mysql">MySql</h4><p>MySqle, Mac 是没有预装的，我们可以通过万能的brew来安装.</p>
+<pre><code class="lang-undefined">$ brew install mysql</code></pre><p>之后设定一下root用户密码。</p>
+<pre><code class="lang-undefined">$ mysql <span class="token operator">-</span>u root <span class="token operator">-</span>p</code></pre><p>至此，我们就完成了AMP的安装，可以进行Opencart安装了。</p>
+<h3 id="2.-安装opencart">2. 安装Opencart</h3><p>Opencart 的安装和Wordpres一样，都非常的简单，在基础环境（也就是Apache, PHP, Mysql) 已经具备的情况下, 安装一般都不会有什么问题。其实只要确定你已经设置好了MySql和PHP的相关拓展，那么安装就是剩下点击鼠标的事情了。好吧，但是还是让我们慢慢来试试吧。</p>
+<h3 id="mysql">MySql</h3><p>Opencart 的相关数据库设置，首先我们确定一下用户名和密码，这会成为以后Opencart的专用数据库，也是以后管理员经常要进行交互的。让我们来创建一下opencart的数据库和用户吧</p>
+<pre><code class="lang-undefined">$mysql <span class="token operator">-</span>u root <span class="token operator">-</span>p # 输入你的root密码之后进入mysql的shell
+
+mysql<span class="token operator">></span> CREATE DATABASE opencart<span class="token punctuation">;</span> # 创建数据库
+mysql<span class="token operator">></span> CREATE USER opencartuser@localhost<span class="token punctuation">;</span> # 创建用户
+mysql<span class="token operator">></span> SET PASSWORD FOR opencartuser@localhost<span class="token operator">=</span> <span class="token function">PASSWORD</span><span class="token punctuation">(</span>“输入你的密码”<span class="token punctuation">)</span><span class="token punctuation">;</span> # 创建用户的密码
+mysql<span class="token operator">></span> GRANT ALL PRIVILEGES ON opencart<span class="token punctuation">.</span><span class="token operator">*</span> TO opencartuser@localhost IDENTIFIED BY ‘你的密码’<span class="token punctuation">;</span> # 授权给用户
+mysql<span class="token operator">></span> FLUSH PRIVILEGES<span class="token punctuation">;</span> # 是权限生效</code></pre><p>这样就拥有了一个Opencart的数据库。</p>
+<h3 id="opencart的安装">Opencart的安装</h3><p>从［github](<a href="http://www.github.com/)上直接clone下来Opencart就好了">http://www.github.com/)上直接clone下来Opencart就好了</a></p>
+<pre><code class="lang-undefined">$ git clone https<span class="token punctuation">:</span><span class="token operator">/</span><span class="token operator">/</span>github<span class="token punctuation">.</span>com<span class="token operator">/</span>opencart<span class="token operator">/</span>opencart<span class="token punctuation">.</span>git</code></pre><p>然后将upload的目录移到我们的Apache主目录下方即可</p>
+<pre><code class="lang-undefined">$ mv opencart<span class="token operator">/</span>upload <span class="token operator">~</span><span class="token operator">/</span>Sites<span class="token operator">/</span>opencart
+$ cd <span class="token operator">~</span><span class="token operator">/</span>Sites<span class="token regex">/opencart/</span>
+$ cp config<span class="token operator">-</span>dist<span class="token punctuation">.</span>php config<span class="token punctuation">.</span>php
+$ cp admin<span class="token operator">/</span>config<span class="token operator">-</span>dist<span class="token punctuation">.</span>php admin<span class="token operator">/</span>config<span class="token operator">-</span>dist<span class="token punctuation">.</span>php</code></pre><p>然后访问 <a href="http://localhost/opencart">http://localhost/opencart</a>, 此时，你立即可以看到你的安装环境是否已经具备，如果没有具备，作为相关的设置之后即可完成安装了。</p>
+<h3 id="后续">后续</h3><p>将研究其源代码，进行相关的定制。Opencart作为php中比较成熟的MVC框架，阅读起来应该还可以。</p>
+</article></section><footer class="footer">
+  Copyright ©2014-2017 <a href="http://minghe.me"> minghe.me</a> | Powered by <a href="https://github.com/metrue/Seal">Seal</a> on top of <a href="https://vuejs.org" target="_blank">Vue.js</a></footer></html>

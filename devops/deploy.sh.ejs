@@ -1,10 +1,10 @@
 #!/bin/bash
 
-target='root@139.162.72.153'
+target='<%= user %>@<%= host %>'
 ssh ${target} <<END
   docker rmi \$(docker images --filter "dangling=true" -q --no-trunc)
-  rm -rf /tmp/minghe.me
-  git clone git@github.com:metrue/metrue.github.io.git /tmp/minghe.me
+  rm -rf /tmp/<%= domain %>
+  git clone <%= repo %> /tmp/<%= domain %>
   cd /tmp/minghe.me
 
   docker rm \$(docker stop \$(docker ps -a -q --filter ancestor=seal  --format="{{.ID}}"))
@@ -12,8 +12,8 @@ ssh ${target} <<END
   docker run --rm -p 80:80 -p 443:443 \
     -v /etc/letsencrypt:/etc/letsencrypt \
     quay.io/letsencrypt/letsencrypt auth \
-    --standalone -m h.minghe@gmail.com --agree-tos \
-    -d minghe.me
+    --standalone -m <%= email %> --agree-tos \
+    -d <%= domain %>
 
     docker run --rm -p 80:80 -p 443:443 \
       -v /etc/letsencrypt:/etc/letsencrypt \

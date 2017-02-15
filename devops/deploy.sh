@@ -14,5 +14,5 @@ ssh ${host} <<END
     -d minghe.me
 
   docker build -f devops/dockerfile.nginx -t seal .
-  docker run -d -p 80:80 -v /etc/letsencrypt:/etc/letsencrypt seal
+  docker run -d -p 80:80 -p 443:443 -v /etc/letsencrypt:/etc/letsencrypt seal
 END

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-target='root@139.162.72.153'
+target='root@139.162.23.110'
 ssh ${target} <<END
   docker rmi \$(docker images --filter "dangling=true" -q --no-trunc)
   rm -rf /tmp/minghe.me

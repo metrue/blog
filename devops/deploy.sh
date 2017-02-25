@@ -4,7 +4,7 @@ target='root@139.162.23.110'
 ssh ${target} <<END
   docker rmi \$(docker images --filter "dangling=true" -q --no-trunc)
   rm -rf /tmp/minghe.me
-  git clone git@github.com:metrue/metrue.github.io.git /tmp/minghe.me
+  git clone https://github.com/metrue/metrue.github.io.git /tmp/minghe.me
   cd /tmp/minghe.me
 
   docker rm \$(docker stop \$(docker ps -a -q --filter ancestor=seal  --format="{{.ID}}"))

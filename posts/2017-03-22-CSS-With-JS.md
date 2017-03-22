@@ -11,12 +11,15 @@
 三个示例你就是基本上了解了其灵活的用法。
 
 * 局部样式
+
 ```
 .className {
   color: green;
 }
 ```
+
 或者
+
 ```
 :local(.className) {
   color: green;
@@ -24,6 +27,7 @@
 ```
 
 * 全局样式
+
 ```
 :global(.className) {
   color: green;
@@ -55,14 +59,16 @@
 上面的三点基本上就解决了传统的 CSS 的大多数问题。 使用原生 CSS 写样式，通过 JavaScript 来管理样式的注入，这就是 [css-modules](https://github.com/css-modules/css-modules) 深得人心的原因。配合 React 使用的体验是超级爽。简单说一下，怎么在 React 中使用 [css-modules](https://github.com/css-modules/css-modules) 吧。
 
 * 在 webpack 配置文件中配置好响应的loader
+
 ```
 {
-        test: /\.css$/,
-        loader: 'css-loader?modules&importLoaders=1&localIdentName=[name]__[local]___[hash:base64:5]',
-      },
+  test: /\.css$/,
+  loader: 'css-loader?modules&importLoaders=1&localIdentName=[name]__[local]___[hash:base64:5]',
+}
 ```
 
 * 基本用法
+
 ```
 import styles from './style.css'
 
@@ -93,12 +99,12 @@ class VersionBumper extends React.Component {
     const inputStyle = editable ? styles.inputEnabled : styles.inputDisabled
 
     return (
-       <div
-          onClick={ ::this.enableEdit }
-          className={ `form-control ${inputStyle}` }
-          onChange={ ::this.change }
-          readOnly={ !editable }
-        />
+      <div
+        onClick={ ::this.enableEdit }
+        className={ `form-control ${inputStyle}` }
+        onChange={ ::this.change }
+        readOnly={ !editable }
+      />
     )
 ```
 

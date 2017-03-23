@@ -4,7 +4,9 @@
   "description": "Yet another static website generator built on top of Vue 2 and Webpack",
   "main": "src/main.js",
   "scripts": {
+    "build-resume": "cd about && make build && cp resume.html ../public/resume.html",
     "build": "./node_modules/.bin/cici -i posts -o public -t minghe -g 'UA-52720212-1' -d minghe.me",
+    "postbuild": "npm run build-resume",
     "prepareConfig": "./node_modules/.bin/babel-node bin/prepare_config.js",
     "preserve": "npm run build",
     "serve": "http-server public",
@@ -80,6 +82,7 @@
     "marked": "^0.3.6",
     "normalize.css": "^5.0.0",
     "prismjs": "^1.5.1",
+    "resume-cli": "^0.4.19",
     "timeago.js": "^2.0.2",
     "vue": "^2.1.0",
     "vue-router": "^2.0.0",

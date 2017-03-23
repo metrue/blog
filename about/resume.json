@@ -8,11 +8,11 @@
     "website": "https://minghe.me",
     "summary": "Minghe from Shanghai. He has earned master and bachelor degrees of electrical engineering from the Harbin Institute of Technology, he is working in Splunk as a JavaScript developer.",
     "location": {
-      "address": "Room 901, No.303, Songhu Road",
-      "postalCode": "CA 94115",
+      "address": "Room 901, No.303, Songhu Road, Yangpu",
+      "postalCode": "200000",
       "city": "Shanghai",
       "countryCode": "China",
-      "region": "Yangpu"
+      "region": ""
     },
     "profiles": [
       {
@@ -91,7 +91,7 @@
     {
       "title": "China Contemporary Undergraduate Mathematical Contest Modeling",
       "date": "2012-12",
-      "awarder": "China Society for Industrial and Applied Mathematics",
+      "awarder": "mcm.edu.cn",
       "summary": ""
     }
   ],
@@ -121,26 +121,6 @@
         "Node.js (ES6+)",
         "Ruby/Python/Perl"
       ]
-    }
-  ],
-  "languages": [
-    {
-      "language": "Chiness",
-      "fluency": "Native speaker"
-    },
-    {
-      "language": "English",
-      "fluency": "Fluent"
-    }
-  ],
-  "interests": [
-    {
-      "name": "Basketball",
-      "keywords": []
-    },
-    {
-      "name": "Cycling",
-      "keywords": []
     }
   ]
 }

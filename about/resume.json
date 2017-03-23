@@ -1,0 +1,146 @@
+{
+  "basics": {
+    "name": "Minghe Huang",
+    "label": "Software Engineer",
+    "picture": "",
+    "email": "h.minghe@gmail.com",
+    "phone": "+86 15618694065",
+    "website": "https://minghe.me",
+    "summary": "Minghe from Shanghai. He has earned master and bachelor degrees of electrical engineering from the Harbin Institute of Technology, he is working in Splunk as a JavaScript developer.",
+    "location": {
+      "address": "Room 901, No.303, Songhu Road",
+      "postalCode": "CA 94115",
+      "city": "Shanghai",
+      "countryCode": "China",
+      "region": "Yangpu"
+    },
+    "profiles": [
+      {
+        "network": "GitHub",
+        "username": "***REMOVED***",
+        "url": "https://github.com/***REMOVED***"
+      }
+    ]
+  },
+  "work": [
+    {
+      "company": "Splunk, Inc",
+      "position": "Software Engineer",
+      "website": "https://www.splunk.com/",
+      "startDate": "2016-08",
+      "endDate": "present",
+      "summary": "",
+      "highlights": [
+        "Setup JavaScript full stack development infrastructure on top of Koa, React/Redux and Mocha",
+        "Build the Splunk application vetting web platform",
+        "Develop the engineering data collection and data visualization platform"
+      ]
+    },
+    {
+      "company": "Second Spectrum, Inc",
+      "position": "Software Engineer",
+      "website": "https://www.secondspectrum.com",
+      "startDate": "2016-01",
+      "endDate": "2016-08",
+      "summary": "",
+      "highlights": [
+        "Build workflow management platform with Node.js, PostgreSQL and React, Redux",
+        "Contributted in CI/CD infrastructure building on top of Jenkins, Docker, AWS with open source tools like terraform and consul"
+      ]
+    },
+    {
+      "company": "Synopsys, Inc",
+      "position": "Software Engineer",
+      "website": "https://www.synopsys.com",
+      "startDate": "2013-07",
+      "endDate": "2016-01",
+      "summary": "",
+      "highlights": [
+        "Worked as main developer of infrastructure as code migration, contributed more than 30% APIs of common library",
+        "Developed mounts of tools to automate infrastructure setup in continuous integration"
+      ]
+    }
+  ],
+  "education": [
+    {
+      "institution": "Harbin Institute of Technolegy",
+      "area": "Electrical Engineering",
+      "studyType": "Bachelor",
+      "startDate": "2011-08",
+      "endDate": "2013-07",
+      "gpa": "",
+      "courses": []
+    },
+    {
+      "institution": "Harbin Institute of Technolegy",
+      "area": "Electrical Engineering",
+      "studyType": "Bachelor",
+      "startDate": "2007-08",
+      "endDate": "2011-07",
+      "gpa": "",
+      "courses": []
+    }
+  ],
+  "awards": [
+    {
+      "title": "GE Foundation TECH Award",
+      "date": "2011-12",
+      "awarder": "GE Foundation TECH",
+      "summary": ""
+    },
+    {
+      "title": "China Contemporary Undergraduate Mathematical Contest Modeling",
+      "date": "2012-12",
+      "awarder": "China Society for Industrial and Applied Mathematics",
+      "summary": ""
+    }
+  ],
+  "skills": [
+    {
+      "name": "Web Development",
+      "level": "",
+      "keywords": [
+        "Koa",
+        "Mongo/PostgreSQL",
+        "React/Redux/Webpack",
+        "JavaScript"
+      ]
+    },
+    {
+      "name": "Cloud",
+      "level": "",
+      "keywords": [
+        "AWS (lambda/API Gateway/DynamoDB)",
+        "Docker"
+      ]
+    },
+    {
+      "name": "Tooling",
+      "level": "",
+      "keywords": [
+        "Node.js (ES6+)",
+        "Ruby/Python/Perl"
+      ]
+    }
+  ],
+  "languages": [
+    {
+      "language": "Chiness",
+      "fluency": "Native speaker"
+    },
+    {
+      "language": "English",
+      "fluency": "Fluent"
+    }
+  ],
+  "interests": [
+    {
+      "name": "Basketball",
+      "keywords": []
+    },
+    {
+      "name": "Cycling",
+      "keywords": []
+    }
+  ]
+}

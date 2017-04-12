@@ -73,7 +73,7 @@
     "webpack-dev-server": "2.1.0-beta.11"
   },
   "dependencies": {
-    "cici": "^0.0.9",
+    "cici": "^0.0.10",
     "ejs": "^2.5.5",
     "es6-promise": "^4.0.0",
     "front-matter": "^2.1.0",

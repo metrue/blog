@@ -6,6 +6,7 @@ RUN apk add --update python
 RUN apk add --update make
 RUN apk add --update gcc
 RUN apk add --update g++
+RUN apk add --update git
 
 RUN mkdir -p /opt/seal-static-site
 WORKDIR /opt/seal-static-site

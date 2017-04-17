@@ -7,7 +7,7 @@ ssh ${target} <<END
   git clone https://github.com/***REMOVED***/***REMOVED***.github.io.git /tmp/minghe.me
   cd /tmp/minghe.me
 
-  docker rm \$(docker stop \$(docker ps -a -q --filter ancestor=seal  --format="{{.ID}}"))
+  docker rm \$(docker stop \$(docker ps -a -q --filter ancestor=***REMOVED***/cici  --format="{{.ID}}"))
 
   docker run --rm -p 80:80 -p 443:443 \
     -v /etc/letsencrypt:/etc/letsencrypt \
@@ -20,5 +20,9 @@ ssh ${target} <<END
     quay.io/letsencrypt/letsencrypt renew \
     --standalone
 
-   docker run -p 80:80 -p 443:443 -v /tmp/minghe.me/posts:/opt/cici/posts  -v /tmp/minghe.me/devops/nginx.conf:/etc/nginx/nginx.conf ***REMOVED***/cici
+  docker run -p 80:80 -p 443:443  \
+    -v /tmp/minghe.me/posts:/opt/cici/posts \
+    -v /tmp/minghe.me/devops/nginx.conf:/etc/nginx/nginx.conf \
+    -v /etc/letsencrypt:/etc/letsencrypt \
+    ***REMOVED***/cici
 END

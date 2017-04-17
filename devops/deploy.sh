@@ -15,11 +15,10 @@ ssh ${target} <<END
     --standalone -m h.minghe@gmail.com --agree-tos \
     -d minghe.me
 
-    docker run --rm -p 80:80 -p 443:443 \
-      -v /etc/letsencrypt:/etc/letsencrypt \
-      quay.io/letsencrypt/letsencrypt renew \
-      --standalone
+  docker run --rm -p 80:80 -p 443:443 \
+    -v /etc/letsencrypt:/etc/letsencrypt \
+    quay.io/letsencrypt/letsencrypt renew \
+    --standalone
 
-  docker build -f devops/dockerfile.nginx -t seal .
-  docker run -d -p 80:80 -p 443:443 -v /etc/letsencrypt:/etc/letsencrypt seal
+   docker run -p 80:80 -p 443:443 -v /tmp/minghe.me/posts:/opt/cici/posts  -v /tmp/minghe.me/devops/nginx.conf:/etc/nginx/nginx.conf ***REMOVED***/cici
 END

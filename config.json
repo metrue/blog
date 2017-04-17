@@ -1,6 +1,7 @@
 {
-  "title": "minghe",
+  "siteName": "minghe",
   "domain": "minghe.me",
-  "postsDir": "posts",
-  "outputDir": "public"
+  "ga": "UA-52720212-1",
+  "website": "minghe.me",
+  "copyRightYear": "2014"
 }

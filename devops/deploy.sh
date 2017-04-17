@@ -24,5 +24,6 @@ ssh ${target} <<END
     -v /tmp/minghe.me/posts:/opt/cici/posts \
     -v /tmp/minghe.me/devops/nginx.conf:/etc/nginx/nginx.conf \
     -v /etc/letsencrypt:/etc/letsencrypt \
+    -v /tmp/minghe.me/config.json:/opt/cici/config.json \
     -d metrue/cici
 END

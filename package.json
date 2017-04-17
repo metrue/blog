@@ -10,7 +10,6 @@
     "prepareConfig": "./node_modules/.bin/babel-node bin/prepare_config.js",
     "preserve": "npm run build",
     "serve": "http-server public",
-    "predeploy": "npm run prepareConfig",
     "deploy": "./devops/deploy.sh"
   },
   "engines": {

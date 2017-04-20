@@ -20,6 +20,7 @@ ssh ${target} <<END
     quay.io/letsencrypt/letsencrypt renew \
     --standalone
 
+  docker pull metrue/cici
   docker run -p 80:80 -p 443:443  \
     -v /tmp/minghe.me/posts:/opt/cici/posts \
     -v /tmp/minghe.me/devops/nginx.conf:/etc/nginx/nginx.conf \

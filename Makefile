@@ -1,2 +1,2 @@
 deploy:
-	./bin/deploy.sh
+	./devops/deploy.sh

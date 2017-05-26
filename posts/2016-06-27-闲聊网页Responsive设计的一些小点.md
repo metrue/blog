@@ -22,11 +22,15 @@ media query 真是一个好东西，简单的语法，好用的功能。
 }
 ```
 
-media query 一共支持如下的media types: all, print, screen, speech. 但是并不是所有的浏览器实现了这些media types，比如此时 Firefox  就只支持了 all 和 screen 类别。
+常用的定义:
 
-而 media query 支持的查询条件（media conditions）包括width, height, aspect-ratio, color, orientaion 等，可以到[w3网站](http://dev.w3.org/csswg/mediaqueries/#mq-features)上查看.
+```
+@value small: (max-width: 599px);
+@value medium: (min-width: 600px) and (max-width: 959px);
+@value large: (min-width: 960px);
+```
 
-有了media，很多时候你可以不用写两份 css 文件了。
+media query 一共支持如下的media types: all, print, screen, speech. 但是并不是所有的浏览器实现了这些media types，比如此时 Firefox  就只支持了 all 和 screen 类别。 而 media query 支持的查询条件（media conditions）包括width, height, aspect-ratio, color, orientaion 等，可以到[w3网站](http://dev.w3.org/csswg/mediaqueries/#mq-features)上查看.  有了media，很多时候你可以不用写两份 css 文件了。
 
 ## 单位
 

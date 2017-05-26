@@ -69,43 +69,239 @@
 
 * 基本用法
 
+1. 类
+
+styles.css
 ```
-import styles from './style.css'
+.title {
+  font-weight: bold;
+  font-size: 16px;
+}
 
-class VersionBumper extends React.Component {
-  constructor(props) {
-    super(props)
+.email {
+  padding: .5rem;
+}
 
-    this.state = {
-      editable: false,
-      version: props.version,
-    }
-  }
+.submitButton {
+  padding: .5rem;
+  margin-top: .5rem;
+  border: 1px solid #2F79AD;
+  border-radius: 4px;
+  background-color: #6DB9EE;
+}
 
-  enableEdit() {
-    this.setState({
-      editable: true,
-    })
-  }
+.submitButton:hover {
+  background-color: #2F79AD;
+}
+```
 
-  disableEdit() {
-    this.setState({
-      editable: false,
-    })
-  }
+app.jsx
+```
+import React from 'react';
+import styles from './styles.css';
 
+class Widget extends React.Component {
   render() {
-    const { editable } = this.state
-    const inputStyle = editable ? styles.inputEnabled : styles.inputDisabled
-
     return (
-      <div
-        onClick={ ::this.enableEdit }
-        className={ `form-control ${inputStyle}` }
-        onChange={ ::this.change }
-        readOnly={ !editable }
-      />
-    )
+      <div>
+        <h2 className={styles.title}>
+          Email Signup
+        </h2>
+        <input
+          className={styles.email}
+          placeholder="Email Please"
+          />
+        <br/>
+        <button
+          className={styles.submitButton}
+          >
+          Submit
+        </button>
+      </div>
+    );
+  }
+}
+export default Widget;
+```
+
+2. 包含类
+
+styles.css
+```
+.button {
+  padding: .5rem;
+  margin-top: .5rem;
+  border: 1px solid #2F79AD;
+  border-radius: 4px;
+  background-color: #6DB9EE;
+}
+
+.fun .button {
+  font-weight: bold;
+  background: linear-gradient(
+    90deg,
+    #ff0000, #ffff00,
+    #00ff00, #00ffff,
+    #ff00ff, #ff0000
+  );
+}
+```
+
+app.jsx
+```
+import React from 'react';
+import styles from './styles.css';
+
+class Widget extends React.Component {
+  render() {
+    return (
+      <div>
+        <button
+          className={styles.button}>
+          Regular Button
+        </button>
+        <br/>
+        <div className={styles.fun}>
+          <button
+            className={styles.button}
+            >
+            FUN BUTTON
+          </button>
+        </div>
+      </div>
+    );
+  }
+}
+export default Widget;
+```
+
+3. 组合
+
+utils.css
+```
+/* grapes are round and purple */
+.grape {
+  border: 2px solid #ff00ff;
+  border-radius: 10px;
+  background-color: purple;
+  color: white;
+}
+
+.grape:hover {
+  background-color: #ff00ff;
+}
+```
+
+styles.css
+```
+.button {
+  composes: grape from './utils.css';
+  padding: .5rem;
+  margin-top: .5rem;
+}
+```
+
+app.jsx
+```
+import React from 'react';
+import styles from './styles.css';
+
+class Widget extends React.Component {
+  render() {
+    return (
+      <button className={styles.button}>
+        Button
+      </button>
+    );
+  }
+}
+export default Widget;
+```
+
+4. 标签
+
+style.css
+```
+input.large {
+  font-size: 20px;
+}
+
+.medium input {
+  font-size: 14px;
+}
+
+.tiny * {
+  font-size: 9px;
+}
+```
+
+app.jsx
+```
+import React from 'react';
+import styles from './styles.css';
+
+class Widget extends React.Component {
+  render() {
+    return (
+      <div>
+        <input
+          className={styles.large}
+          placeholder="I am large"
+          />
+        <div className={styles.medium}>
+          <input placeholder="I am medium" />
+        </div>
+        <div className={styles.tiny}>
+          <input placeholder="I am so tiny" />
+        </div>
+      </div>
+    );
+  }
+}
+export default Widget;
+```
+
+5. media query
+
+styles.css
+```
+.small {
+  opacity: 0.2;
+}
+.large {
+  opacity: 1.0;
+}
+
+@media (max-width: 600px) {
+  .small {
+    opacity: 1.0;
+  }
+  .large {
+    opacity: 0.2;
+  }
+}
+```
+
+app.jsx
+```
+import React from 'react';
+import styles from './styles.css';
+
+class Widget7 extends React.Component {
+  render() {
+    return (
+      <div>
+        <div className={styles.small}>
+          The Window is Small
+        </div>
+        <div className={styles.large}>
+          The Window is Big
+        </div>
+      </div>
+    );
+  }
+}
+export default Widget7;
 ```
 
 ### 拓展阅读

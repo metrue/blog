@@ -287,7 +287,7 @@ app.jsx
 import React from 'react';
 import styles from './styles.css';
 
-class Widget7 extends React.Component {
+class Widget extends React.Component {
   render() {
     return (
       <div>
@@ -301,7 +301,7 @@ class Widget7 extends React.Component {
     );
   }
 }
-export default Widget7;
+export default Widget;
 ```
 
 ### 拓展阅读

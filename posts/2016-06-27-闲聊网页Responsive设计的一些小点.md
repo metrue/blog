@@ -48,6 +48,29 @@ em 是一个纯粹的相对单位，font-size 设置为 em 单位的时候表示
 
 rem (root em) 是一个CSS3新增的一个相对单位，它和em的区别是，em相对的父元素的大小，而rem则是相对于根元素的大小。所以当根元素的大小发生变化的时候，所有使用rem的元素都会成比例的调整字体大小，避免了字体大小逐层复合的连锁效应。
 
+
+* Viewport-Percentage
+
+视口比例长度定义了相对于视口的长度大小，这是文档的可见部分。 当视口的大小被修改（通过更改桌面计算机窗口大小或旋转手机或平板设备的方向）时，只有基于Gecko的浏览器才动态更新视口值。
+
+```
+1vw = 1% of viewport width
+1vh = 1% of viewport height
+1vmin = 1vw or 1vh, whichever is smaller
+1vmax = 1vw or 1vh, whichever is larger
+
+h1 {
+  font-size: 5.9vw;
+}
+
+h2 {
+  font-size: 3.0vh;
+}
+p {
+  font-size: 2vmin;
+}
+```
+
 然而使用哪一种单位并没有优劣之分，选择自己和团队认为合适的然后保持一致，我觉得就算是best practice了。
 
 ## 工具
@@ -56,11 +79,17 @@ rem (root em) 是一个CSS3新增的一个相对单位，它和em的区别是，
 
 * browser-sync
 
-这是一个多个设备的工具，使用起来超级简单，而且超级方便，是进行 Responsive 网页设计必不可少的工具。 可以两个命令就可以立即尝试：
+这是一个多个设备同步的工具，使用起来超级简单，而且超级方便，是进行 Responsive 网页设计必不可少的工具。 可以两个命令就可以立即尝试：
 
 ```
 $ npm install -g browser-sync
 $ browser-sync start --server *.css
+```
+
+如果你发现你其它设备访问不了你的网页时，你试试能不能 ping 通你的局域网 ip, 如果不能的话，90% 的可能性是你的本机防火墙挡住了所有的来访，所以你可以检查一下你的系统设定:
+
+```
+System Preferences -> Security & Privacy -> Firewall -> Firewall Options...
 ```
 
 可以去他们官网了解更多： [browser-sync](https://www.browsersync.io/)

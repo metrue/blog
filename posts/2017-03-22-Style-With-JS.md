@@ -111,7 +111,7 @@ class Signup extends React.Component {
 export default Signup;
 ```
 
-2. 包含类
+* 包含类
 
 styles.css
 ```
@@ -159,7 +159,7 @@ class ButtonGroup extends React.Component {
 export default ButtonGroup;
 ```
 
-3. 组合
+* 组合
 
 utils.css
 ```
@@ -202,7 +202,7 @@ class NiceButton extends React.Component {
 export default NiceButton;
 ```
 
-4. 标签
+* 标签
 
 style.css
 ```
@@ -242,7 +242,7 @@ class InputGroup extends React.Component {
 export default InputGroup;
 ```
 
-5. media query
+* media query
 
 styles.css
 ```

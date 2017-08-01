@@ -1,5 +1,3 @@
-# Bug 和 Feature
-
 作为开发者，你每天都会面对一个问题：我到底要先修 bug 还是先做 feature呢?  有的同学选择先修 bug，有的同学选择先做好 feature，也有的同学选择边修 bug 边做 feature.
 
 * 因为我们老板更关注新 feature

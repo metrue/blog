@@ -1,6 +1,8 @@
 ## 前言
 
-由于公司 Ops 团队人手不够，维护基础设施（jenkins，gitlab，redis，数据库等等）的稳定和持续发展已经占据了他们大部分的精力，没有更多的资源来做更好的自动化，趁着公司内部开展hackathon，我们开发团队几个同事决定自己来做一会devops的角色，从开发团队的需求出发搭建一个完整的CI/CD自动化环境.  而我当然是选择其中最好玩的一个环节喽：ChatOps 的 Bot.
+本文的目的是简单介绍一个下我自己如何借助 [fx](https://github.com/metrue/fx)，通过一个 JavaScript 函数就可以实现一个简单的 ChatOps 方案的.
+
+由于公司 Ops 团队人手不够，维护基础设施（jenkins，gitlab，redis，数据库等等）的稳定和持续发展已经占据了他们大部分的精力，没有更多的资源来做更好的自动化，趁着公司内部开展Hackathon，我们开发团队几个同事决定自己来做一会 DevOps 的角色，从开发团队的需求出发搭建一个完整的CI/CD自动化环境.  而我当然是选择其中最好玩的一个环节喽：ChatOps 的 Bot.
 
 ChatOps 就不用多说了，就是 `ChatOps = Chat + Ops` 嘛，就是通过 Chat 的方式来完成 Ops 相关的操作。当然业界已经有很成熟实现 ChatOps 的框架 [GitHub - hubotio/hubot: A customizable life embetterment robot.](https://github.com/hubotio/hubot) ，或者 [botkit](https://github.com/howdyai/botkit) , 都在很多大公司广泛的使用。
 

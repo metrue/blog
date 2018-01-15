@@ -4,7 +4,7 @@
 
 由于公司 Ops 团队人手不够，维护基础设施（jenkins，gitlab，redis，数据库等等）的稳定和持续发展已经占据了他们大部分的精力，没有更多的资源来做更好的自动化，趁着公司内部开展Hackathon，我们开发团队几个同事决定自己来做一会 DevOps 的角色，从开发团队的需求出发搭建一个完整的CI/CD自动化环境.  而我当然是选择其中最好玩的一个环节喽：ChatOps 的 Bot.
 
-ChatOps 就不用多说了，就是 `ChatOps = Chat + Ops` 嘛，就是通过 Chat 的方式来完成 Ops 相关的操作。当然业界已经有很成熟实现 ChatOps 的框架 [GitHub - hubotio/hubot: A customizable life embetterment robot.](https://github.com/hubotio/hubot) ，或者 [botkit](https://github.com/howdyai/botkit) , 都在很多大公司广泛的使用。
+ChatOps 就不用多说了，就是 `ChatOps = Chat + Ops` 嘛，就是通过 Chat 的方式来完成 Ops 相关的操作。当然业界已经有很成熟实现 ChatOps 的框架 [GitHub - hubotio/hubot](https://github.com/hubotio/hubot) ，或者 [botkit](https://github.com/howdyai/botkit) , 都在很多大公司广泛的使用。
 
 ## 分析需求
 
@@ -71,7 +71,7 @@ module.exports = async (req) => {
 
     // 调用Jenkins的API做Job状态的查询
     const query = (projectName, branch) => {
-        const URL = `http://af6a9adb.ngrok.io/job/${projectName}/job/${branch}/lastBuild/api/json`;
+        const URL = `http://<your jenkins server>/job/${projectName}/job/${branch}/lastBuild/api/json`;
 
         const cmd = `curl -X POST  ${URL} --user admin:admin`;
         return new Promise((res, rej) => {
@@ -87,7 +87,7 @@ module.exports = async (req) => {
     };
 
     const message = (msg) => {
-        const SEND_URL = "https://hooks.slack.com/services/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";
+        const SEND_URL = "https://hooks.slack.com/services/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j";
         const cmd = `curl -X POST --data-urlencode "payload={\\"channel\\": \\"#hack-team-1\\", \\"username\\": \\"chatops\\", \\"text\\": \\"${msg}\\"}" ${SEND_URL}`;
         return new Promise((res, rej) => {
             exec(`${cmd}`, (err, stdout, stderr) => {
@@ -121,4 +121,4 @@ fx up chatops.js
 如果你想我们一样使用的 Slack 的话，你需要在 Slack 的 Outgoing hook 中把你刚刚部署好的服务的 url 配置过去，然后设置相应的触发条件，我们的一个简单但是五脏俱全的 ChatBot 就算完成了.
 
 ### Bonus
-如果你需要一个内网穿透工具，也许 [ngrok - secure introspectable tunnels to localhost](https://ngrok.com/) 是你最好的选择。
+如果你需要一个内网穿透工具，也许 [ngrok](https://ngrok.com/) 是你最好的选择。

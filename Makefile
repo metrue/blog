@@ -1,2 +1,0 @@
-deploy:
-	./devops/deploy.sh

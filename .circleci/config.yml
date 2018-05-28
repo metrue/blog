@@ -26,7 +26,6 @@ steps: &build
       name: build
       command: |
         npm run build
-        cp wechat.jpg public
   - persist_to_workspace:
       root: .
       paths:

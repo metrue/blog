@@ -1,0 +1,97 @@
+workspace: &workspace
+  ~/circleci-YoYo-workflows
+
+defaults: &defaults
+    docker:
+      - image: circleci/node:9.11
+    working_directory: *workspace
+
+steps: &setup
+  - checkout
+  - run:
+      name: install client deps
+      command: |
+        npm install
+  - persist_to_workspace:
+      root: .
+      paths:
+        - '*'
+
+steps: &build
+  - setup_remote_docker:
+      docker_layer_caching: true
+  - attach_workspace:
+      at: *workspace
+  - run:
+      name: build
+      command: |
+        npm run build
+        cp wechat.jpg public
+  - persist_to_workspace:
+      root: .
+      paths:
+        - '*'
+
+steps: &deploy-production
+  - setup_remote_docker:
+      docker_layer_caching: true
+  - attach_workspace:
+      at: *workspace
+  - run: sudo apt-get update && sudo apt-get install -qq -y python-pip libpython-dev
+  - run: curl -O https://bootstrap.pypa.io/get-pip.py && sudo python get-pip.py
+  - run: sudo pip install -q awscli --upgrade
+  - run:
+      name: deploy
+      command: |
+        ls -al public
+        aws s3 sync public s3://minghe.me/ --delete --acl public-read
+
+steps: &deploy-staging
+  - setup_remote_docker:
+      docker_layer_caching: true
+  - attach_workspace:
+      at: *workspace
+  - run: sudo apt-get update && sudo apt-get install -qq -y python-pip libpython-dev
+  - run: curl -O https://bootstrap.pypa.io/get-pip.py && sudo python get-pip.py
+  - run: sudo pip install -q awscli --upgrade
+  - run:
+      name: deploy
+      command: |
+        ls -al public
+        aws s3 sync public s3://staging.minghe.me/ --delete --acl public-read
+
+version: 2
+jobs:
+  setup:
+    <<: *defaults
+    steps: *setup
+  build:
+    <<: *defaults
+    steps: *build
+  deploy-staging:
+    <<: *defaults
+    steps: *deploy-staging
+  deploy-production:
+    <<: *defaults
+    steps: *deploy-production
+
+workflows:
+  version: 2
+  build-and-deploy:
+    jobs:
+      - setup
+      - build:
+          requires:
+            - setup
+      - deploy-staging:
+          requires:
+            - build
+          filters:
+            branches:
+              only: /(^master$|(^fix))/
+      - deploy-production:
+          requires:
+            - build
+          filters:
+            branches:
+              only: production

@@ -36,7 +36,7 @@ steps: &deploy-production
       docker_layer_caching: true
   - attach_workspace:
       at: *workspace
-  - run: sudo apt-get update && sudo apt-get install -qq -y python-pip libpython-dev
+  - run: sudo apt-get update && sudo apt-get install -qq -y python-pip libpython-dev rsync
   - run: curl -O https://bootstrap.pypa.io/get-pip.py && sudo python get-pip.py
   - run: sudo pip install -q awscli --upgrade
   - run:
@@ -50,7 +50,7 @@ steps: &deploy-staging
       docker_layer_caching: true
   - attach_workspace:
       at: *workspace
-  - run: sudo apt-get update && sudo apt-get install -qq -y python-pip libpython-dev
+  - run: sudo apt-get update && sudo apt-get install -qq -y python-pip libpython-dev rsync
   - run: curl -O https://bootstrap.pypa.io/get-pip.py && sudo python get-pip.py
   - run: sudo pip install -q awscli --upgrade
   - add_ssh_keys:

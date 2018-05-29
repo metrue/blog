@@ -60,13 +60,15 @@ steps: &deploy-staging
   - run: sudo pip install -q awscli --upgrade
   - add_ssh_keys:
       fingerprints:
-        - ${FINGER_PRINT_MINGHE_ME}
+        - "${FINGER_PRINT_MINGHE_ME}"
   - run: echo $REMOTE_HOSTKEY >> ~/.ssh/known_hosts
   - run:
       name: deploy
       command: |
         ls -al public
         aws s3 sync public s3://staging.minghe.me/ --delete --acl public-read
+        cat ~/.ssh/known_hosts
+        echo ${FINGER_PRINT_MINGHE_ME}
         rsync -avce ssh ./public/ root@minghe.me:/var/www/minghe.me/
 
 version: 2

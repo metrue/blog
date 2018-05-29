@@ -39,11 +39,16 @@ steps: &deploy-production
   - run: sudo apt-get update && sudo apt-get install -qq -y python-pip libpython-dev rsync
   - run: curl -O https://bootstrap.pypa.io/get-pip.py && sudo python get-pip.py
   - run: sudo pip install -q awscli --upgrade
+  - add_ssh_keys:
+      fingerprints:
+        - ${FINGER_PRINT_MINGHE_ME}
+  - run: echo $REMOTE_HOSTKEY >> ~/.ssh/known_hosts
   - run:
       name: deploy
       command: |
         ls -al public
         aws s3 sync public s3://minghe.me/ --delete --acl public-read
+        rsync -avce ssh ./public/ root@minghe.me:/var/www/minghe.me/
 
 steps: &deploy-staging
   - setup_remote_docker:
@@ -62,7 +67,7 @@ steps: &deploy-staging
       command: |
         ls -al public
         aws s3 sync public s3://staging.minghe.me/ --delete --acl public-read
-        rsync -avce ssh ./public/ root@minghe:/var/www/minghe.me/
+        rsync -avce ssh ./public/ root@minghe.me:/var/www/minghe.me/
 
 version: 2
 jobs:

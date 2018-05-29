@@ -60,7 +60,7 @@ steps: &deploy-staging
   - run: sudo pip install -q awscli --upgrade
   - add_ssh_keys:
       fingerprints:
-        - "${FINGER_PRINT_MINGHE_ME}"
+        - "49:74:19:73:89:ad:b0:ad:8f:79:17:4e:1c:04:bd:71"
   - run: echo $REMOTE_HOSTKEY >> ~/.ssh/known_hosts
   - run:
       name: deploy

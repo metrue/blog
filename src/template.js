@@ -46,26 +46,23 @@ const post = ({ title, domain, css, content, ga, copyRightYear }) => `
     ga('create', '${ga}', 'auto');
     ga('send', 'pageview');
   </script>
-
-  <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-  <!-- 底部 -->
-  <ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8958230776887606"
-     data-ad-slot="9975352781"
-     data-ad-format="auto"></ins>
-  <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-  </script>
-
 </head>
 <body>
   ${content}
   <div id="YoYo"></div>
   <script src="https://yoyo-client-production.s3.amazonaws.com/dist/index.js"></script>
   <footer class="footer">
+    <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+    <!-- 底部 -->
+    <ins class="adsbygoogle"
+       style="display:block"
+       data-ad-client="ca-pub-8958230776887606"
+       data-ad-slot="9975352781"
+       data-ad-format="auto"></ins>
+    <script>
+      (adsbygoogle = window.adsbygoogle || []).push({});
+    </script>
     Copyright ©${copyRightYear} <a href="http://${domain}"> ${domain}</a> | Powered by <a href="https://github.com/metrue/Cici">Cici</a> with <a href="https://github.com/metrue/YoYo">YoYo</a> as comment engine
-
   </footer>
 <body>
 </html>

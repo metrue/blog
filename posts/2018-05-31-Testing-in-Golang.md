@@ -107,7 +107,7 @@ func TestMain(m *testing.M) {
 
  `testing.Short()` 会返回当我们在运行测试的时候是否指定了 `-short` flag。 所以通过检查 `testing.Short()` 可以来决定我们是否需要运行集成测试. 所以我们可以这样写我们的测试.
 
-``` 
+```
 package main
 
 import (

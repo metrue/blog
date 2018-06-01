@@ -3,10 +3,12 @@
 
 来到 Udacity 之后，我对自己的要求是，每一个 feature 都必须配备对应的单元测试，对于对外的服务必须有集成测试。做 Code Review 的时候，如果没有对应的测试代码，也不会想拿到 approve.   每一个工程师都应该认识到测试的重要性， 写测试不仅可以保证了我们功能的正常运行，也让我们思考如何模块化我们的代码，思考业务场景的覆盖。而且其实测试节省我们大量的时间，在设计家工作的时候，没有任何的单元测试，你可以想象没有任何单元测试，对于开发一个重数据模型，基于事件的重交互型的 Web 应用是多么的痛苦吗，我们花了大量的时间在重复的修复同一个 bug, 印象最深的是有一个同事负责一个在不同的场景下自动生成台面的功能，由于没有测试代码，每一次为了修复一个场景的产生问题，都会导致无数的问题。最后那段代码变成一个时常堵塞的下水道，谁都不想碰，但是又总出现问题，只能硬着头皮捏着鼻子去打开修复。
 
-## Test in Golang
+## Testing in Golang
 Go 有内置的测试命令 `go test`，它提供了基本的测试体验。而且也天然支持 `-cover`自动产生测试覆盖率，可以看到 Go 开发者对于测试的重视。
 
 ### Unit Test
+
+* 基本知识
 
 假设我们有这样的代码: hello.go
 ```
@@ -46,14 +48,43 @@ $ go test
 PASS
 ok  	github.com/udacity/go-play-arround	0.007s
 ```
+
 当然我们可以直接获取覆盖率:
+
 ```
 $ go test --cover
 PASS
 coverage: 100.0% of statements
 ok  	github.com/udacity/go-play-arround	0.008s
 ```
+
 如果不喜欢自己写断言，你可以使用 [stretchr/testify](https://github.com/stretchr/testify)这个第三库，写起来会更舒服一些。而且支持 Mocking 和 Test suite。
+
+* 使用不同的 package name
+
+我一般会使用 '<package_name>_test' 这样子的包名来当作测试包名，使用不同的包名会让让我们站在外部使用者的角度来完成测试，更好的保证开放出去的 API 是不是有用。所以在我们的测试代码中，我们会变成这样:
+
+```
+package hello
+
+import (
+  "testing"
+  . github.com/udacity/go-play-arround/hello
+)
+
+func TestHello(t *testing.T) {
+	name := "Tom"
+	msg := Hello(name)
+	expect := "Hello Tom"
+	if msg != expect {
+		t.Errorf("%s != %s", msg, expect)
+	}
+}
+```
+
+你可以看到上面的代码中，我们使用了 [dot import](https://golang.org/ref/spec#Import_declarations), 它会把所有 `hello` 这个包中 exported 出来的 identifiers 在当前包中声明。这样做呢，似乎是一种比较 clean 的做法，不过也有不同的观点. 有人会说
+
+> Since this test is testing the exported API, it doesn’t make sense to pretend to be inside of the package.
 
 ### Integration Test
 * 基本方法

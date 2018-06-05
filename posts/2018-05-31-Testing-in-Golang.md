@@ -65,7 +65,7 @@ ok  	github.com/udacity/go-play-arround	0.008s
 我一般会使用 '<package_name>_test' 这样子的包名来当作测试包名，使用不同的包名会让让我们站在外部使用者的角度来完成测试，更好的保证开放出去的 API 是不是有用。所以在我们的测试代码中，我们会变成这样:
 
 ```
-package hello
+package hello_test
 
 import (
   "testing"
@@ -85,6 +85,41 @@ func TestHello(t *testing.T) {
 你可以看到上面的代码中，我们使用了 [dot import](https://golang.org/ref/spec#Import_declarations), 它会把所有 `hello` 这个包中 exported 出来的 identifiers 在当前包中声明。这样做呢，似乎是一种比较 clean 的做法，不过也有不同的观点. 有人会说
 
 > Since this test is testing the exported API, it doesn’t make sense to pretend to be inside of the package.
+
+* 使用 DATA-DOG/go-sqlmock 来测试数据库交互
+
+如果你的模块中有数据库的交互，在单元测试中不断的启动然后关闭数据库显然是不合适的，所以我们一般在集成测试中才会做这些耗时的操作，所以通过 [DATA-DOG/go-sqlmock](https://github.com/DATA-DOG/go-sqlmock) 可以很轻易帮助我们进行单元测试。一个简单的测试样例可能是这样:
+
+```
+package model
+
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	sqlmock "gopkg.in/DATA-DOG/go-sqlmock.v1"
+)
+
+func TestBuildByUdacityId(t *testing.T) {
+	conn, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer conn.Close()
+
+	rows := sqlmock.NewRows([]string{"openid", "first_name", "last_name", "email"})
+	rows.AddRow("12345", "minghe", "huang", "minghe@a.com")
+	query := "SELECT (.+) FROM users"
+	mock.ExpectQuery(query).WillReturnRows(rows)
+
+	user, err := BuildUserByUdactiyId("12345", conn)
+	assert.Equal(t, nil, err)
+	assert.Equal(t, "12345", user.OpenId)
+	if err := mock.ExpectationsWereMet(); err != nil {
+		assert.Errorf(t, err, "there were unfulfilled expectations: %s")
+	}
+}
+```
 
 ### Integration Test
 * 基本方法

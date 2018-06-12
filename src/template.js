@@ -1,4 +1,4 @@
-const home = ({ siteName, domain, css, content, ga, copyRightYear }) => `
+const home = ({ title, domain, css, content, ga, copyRightYear }) => `
 <!DOCTYPE html>
 <html>
 <head>
@@ -6,7 +6,7 @@ const home = ({ siteName, domain, css, content, ga, copyRightYear }) => `
   <meta name="viewport" content="initial-scale=1,maximum-scale=1,minimum-scale=1,width=device-width,user-scalable=no">
   <meta name="renderer" content="webkit">
   <meta name="theme-color" content="#ffffff">
-  <title> ${siteName} </title>
+  <title> ${ title } </title>
   <meta name="description" content="写代码是那么美好的事情">
   <meta name="keywords" content="排序,正则表达式,程序员,算法,软件开发,AJAX,Algorithm,Android,Bash,book,C++,Code Review,Coding,CSS,Database,Debug,ebook,Erlang,Game,Go,Google,HTML,IE,Java,Javascript,jQuery,Linus Torvalds,Linux,Mac,MySQL,Oracle,OS,Perl,PHP,Programmer,programming,language,Python,Ruby,SQL,Ubuntu,UI,Unix,vim,Web,AWS,lambda,serverless">
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">

@@ -3,6 +3,7 @@ const fs = require('fs')
 const webpack = require('webpack')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
 const StaticSiteGeneratorPlugin = require('static-site-generator-webpack-plugin')
+const CopyWebpackPlugin = require('copy-webpack-plugin')
 
 const isProd = process.env.NODE_ENV === 'production'
 
@@ -79,6 +80,12 @@ module.exports = [{
       paths: [...list, '/'],
       locals: {},
     }),
+    new CopyWebpackPlugin([
+      {
+        from: './images/favicon.png',
+        to: 'favicon.png',
+      },
+    ]),
   ],
   devServer: {
     historyApiFallback: true,

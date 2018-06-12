@@ -11,10 +11,10 @@ function componentFactory(title, list) {
           <a class="nav-link site-title" href="/">{{ title }}</a>
           <ul class="nav justify-content-center">
             <li class="nav-item">
-              <a class="nav-link about-link" href="/about.html">关于</a>
+              <a class="nav-link about-link" href="/About.html">关于</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link project-link" href="/project.html">作品</a>
+              <a class="nav-link project-link" href="/Works.html">作品</a>
             </li>
           </ul>
         </div>
@@ -32,7 +32,7 @@ function componentFactory(title, list) {
     data: () => {
       const newList = list
             .filter((p) => {
-              return !/about|project/.test(p)
+              return !/About|Works/.test(p)
             })
             .map((p) => {
               const filepath = path.join('public', p)

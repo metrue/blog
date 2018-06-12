@@ -7,11 +7,17 @@ function componentFactory(title, list) {
   return Vue.component('Home', {
     template: `
       <section class="list-view">
-        <header class="header">
-          <div style="clear: both">
-            <a class="site-title" href="/about.html">{{ title }}</a>
-          </div>
-        </header>
+        <div class="nav">
+          <a class="nav-link site-title" href="/">{{ title }}</a>
+          <ul class="nav justify-content-center">
+            <li class="nav-item">
+              <a class="nav-link about-link" href="/about.html">关于</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link project-link" href="/project.html">作品</a>
+            </li>
+          </ul>
+        </div>
         <div v-if="!lists">loading..</div>
         <ol v-if="lists" class="list">
           <li v-for="{ title, publishDate } in lists" :key="" class="list-item">
@@ -26,7 +32,7 @@ function componentFactory(title, list) {
     data: () => {
       const newList = list
             .filter((p) => {
-              return !/about/.test(p)
+              return !/about|project/.test(p)
             })
             .map((p) => {
               const filepath = path.join('public', p)
@@ -45,7 +51,7 @@ function componentFactory(title, list) {
       })
       return {
         lists: sortedList,
-        title,
+        title: title.toUpperCase(),
       }
     },
   })

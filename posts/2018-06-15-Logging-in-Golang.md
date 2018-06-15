@@ -29,4 +29,47 @@ func main() {
 
 你可以看到你可以设置不同日志输入的格式，级别等, 基本上和 log 的使用差不多。
 
-* Logging
+* Logging with Fields
+
+为了日志的更可用，一般我们都会给日志携带相关的信息.
+
+```
+  log.WithFields(log.Fields{
+    "name": "john",
+    "age": 12,
+  }).Info("hello")
+```
+
+对于很多的应用，在服务工作的不同阶段，都需要输入相关的日志信息，但是其实这些日志信息都需要输出类似的信息，这个时候我们可以使用置默认的 Fields
+
+```
+fields := log.Fields{"request_id": request_id, "user_ip": user_ip}
+reqLogger:= log.WithFields(fields)
+reqLogger.Info("Hello")
+```
+
+* 给你的 Context 添加 Logger
+
+我自己认为的最佳实践是在 per-request 的 context 添加一个 Logger，然后在这个 request 的生命周期内来使用。
+
+```
+logger := &logrus.Logger{
+  Out: os.Stderr,
+  // Formatter: new(logrus.JSONFormatter),
+  Formatter: new(logrus.TextFormatter),
+  Hooks:     make(logrus.LevelHooks),
+  Level:     logrus.InfoLevel,
+}
+ctx.Logger = logger.WithFields(logrus.Fields{
+  "request": map[string]string{
+    "method":     r.Method,
+    "user-agent": r.UserAgent(),
+    "request":    r.RequestURI,
+    ...
+  },
+})
+
+handle(ctx)
+```
+
+这样就可以在 handle 中方便的使用 Logger 来记录日志了.

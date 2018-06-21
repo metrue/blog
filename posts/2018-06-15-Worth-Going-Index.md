@@ -1,4 +1,9 @@
-最近和常常和 [Jakehao ](https://twitter.com/haojianzong) 聊聊工作这个事，什么样子的工作才是好工作，我们不断的跳槽到底在挑什么. 我和建宗经过这几年的工作经历，都觉得自己并没有单单为了工资而跳槽，由于我们俩都有过不成功的换工作经历，在一个自己不喜欢的地方和氛围下工作，是一种极其折磨人的状态，一般很难呆太久。在找工作的时候，我们两不时会聊自己的面试情况，自己的心态和感受，经过简单的总结之后，我们得到了这样一个公式
+最近有人在 [Hacker News](https://news.ycombinator.com) 问 ["How do I find a meaningful software engineering job?"](https://news.ycombinator.com/item?id=17332796), 其中有一个人的回复我觉得和我的看法有点意思。
+
+>I'm a late-career software developer. 30+ years in the trenches doing this...
+I've done "meaningful" work at companies that treated my like a consumable resource, and less meaningful work at companies that treated me like a person. I prefer the latter. My suggestion is don't jump at the first interesting work, look more for culture and career opportunity. You can find both, those jobs are not quite as rare as unicorns.
+
+最近和常常和 [Jakehao](https://twitter.com/haojianzong) 聊聊工作这个事，什么样子的工作才是好工作，我们不断的跳槽到底在挑什么. 我和 Jake 经过这几年的工作经历，都觉得自己并没有单单为了工资而跳槽，由于我们俩都有过不成功的换工作经历，在一个自己不喜欢的地方和氛围下工作，是一种极其折磨人的状态，一般很难呆太久。在找工作的时候，我们两不时会聊自己的面试情况，自己的心态和感受，经过简单的总结之后，我们得到了这样一个公式
 
 ```
 WGI = WLB * PV * SL * TA

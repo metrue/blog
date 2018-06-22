@@ -1,4 +1,4 @@
-最近有人在 [Hacker News](https://news.ycombinator.com) 问 ["How do I find a meaningful software engineering job?"](https://news.ycombinator.com/item?id=17332796), 其中有一个人的回复我觉得和我的看法有点意思。
+最近有人在 [Hacker News](https://news.ycombinator.com) 问 ["How do I find a meaningful software engineering job?"](https://news.ycombinator.com/item?id=17332796), 其中有一个人的回复我觉得有点意思, 而且和现在的看法有些些许的类似。
 
 >I'm a late-career software developer. 30+ years in the trenches doing this...
 I've done "meaningful" work at companies that treated my like a consumable resource, and less meaningful work at companies that treated me like a person. I prefer the latter. My suggestion is don't jump at the first interesting work, look more for culture and career opportunity. You can find both, those jobs are not quite as rare as unicorns.

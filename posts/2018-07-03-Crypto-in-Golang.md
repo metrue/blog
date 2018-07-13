@@ -33,7 +33,75 @@ AES 有如下几种模式:
 >Considering the importance of authentication I would recommend the following two block cipher modes for most use cases (except for disk encryption purposes): If the data is authenticated by an asymmetric signature use CBC, otherwise use GCM.
 简单来说就是除非数据是通过非对称签名进行验证，则使用 CBC, 否则使用 GCM。
 
-因为在 Golang 中 AES 已经有了现成的模块，所以我们可以很简单的就可以使用 AES 来进行加密:
+### CBC
+
+因为在 Golang 中 AES 已经有了现成的模块，所以我们可以很简单的就可以使用 AES 来进行加密, CBC 在输入不满足 `aes.BlockSize` 的倍数的时候，需要做填充.
+
+```
+func Pad(src []byte) []byte {
+	padding := aes.BlockSize - len(src)%aes.BlockSize
+	padtext := bytes.Repeat([]byte{byte(padding)}, padding)
+	return append(src, padtext...)
+}
+
+func Unpad(src []byte) ([]byte, error) {
+	length := len(src)
+	unpadding := int(src[length-1])
+
+	if unpadding > length {
+		return src, nil
+	}
+	return src[:(length - unpadding)], nil
+}
+```
+
+使用 `KEY` 和 `IV` 来进行加解密.
+
+```
+// Encrypt AES CBC mode
+func Encrypt(key, iv, plaintext []byte) ([]byte, error) {
+	if len(plaintext)%aes.BlockSize != 0 {
+		plaintext = Pad(plaintext)
+	}
+
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return nil, err
+	}
+
+	ciphertext := make([]byte, aes.BlockSize+len(plaintext))
+	cbc := cipher.NewCBCEncrypter(block, iv)
+	cbc.CryptBlocks(ciphertext[aes.BlockSize:], plaintext)
+
+	return ciphertext, nil
+}
+
+// Decrypt AES CBC mode
+func Decrypt(key, iv, ciphertext []byte) ([]byte, error) {
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(ciphertext) < aes.BlockSize {
+		return nil, fmt.Errorf("ciphertext too short")
+	}
+
+	ciphertext = ciphertext[aes.BlockSize:]
+
+	cbc := cipher.NewCBCDecrypter(block, []byte(iv))
+	plaintext := make([]byte, len(ciphertext))
+	cbc.CryptBlocks(plaintext, ciphertext)
+
+	if plaintext, err = Unpad(plaintext); err != nil {
+		return nil, err
+	}
+
+	return plaintext, nil
+}
+```
+
+### GCM
 
 * Encrypt
 
@@ -84,3 +152,17 @@ func Decrypt(ciphertext []byte, key *[32]byte) (plaintext []byte, err error) {
 	)
 }
 ```
+
+### KEY, IV, Nonce
+
+* KEY
+
+KEY 当然是很重要的了，是一个你必须保密的东西。也许这就是为什么人们喜欢取名 `XXX_SECRET_KEY` 的原因。在对称加密的情况下一般只要知道加密数据的 KEY, 就可以解密出来. 在非对称加密的时候，`KEY` 由两部分: `public key` 和 `private key`. `public key` 用来解密和检查签名, 而 `private key` 用来加密签名。
+
+* IV
+
+IV 是 `initialization vector` 的缩写, 字面上意思是初始向量，作为加密迭代的初始输入。 IV 在不同的上下文有不太一样的意思, 但是大多数快加密操作中，`IV` 应该需要随机产生和不可预测的.
+
+* Nonce
+
+Nonce 就是 'a number used only once', 所以一个 nonce 应该且只能使用一次。

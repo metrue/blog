@@ -19,10 +19,21 @@ const getAllFiles = dir =>
   }, [])
 
 function main() {
-  const posts = getAllFiles(POST_DIR).map(p => ({
-    path: p.replace('public/', ''),
-    title: path.parse(p).name,
-  }))
+  const posts = getAllFiles(POST_DIR).map(p => {
+    const slices = p.replace('public/', '').split('/')
+    const category = slices[1] || ''
+    let tag = ''
+    if (slices[2] && !slices[2].includes(path.basename(p))) {
+      tag = slices[2]
+    }
+
+    return {
+      path: p.replace('public/', ''),
+      category,
+      tag,
+      title: path.parse(p).name,
+    }
+  })
   renderToFile('index.ejs', `${PUBLIC_DIR}/index.html`, { posts })
 }
 

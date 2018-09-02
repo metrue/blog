@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>XCodeGhost事件然后呢</title>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="created" content="2018-09-01T22:00:14+0800"/>
+        <meta name="modified" content="2018-09-01T22:07:01+0800"/>
+        <meta name="tags" content=""/>
+        <meta name="last device" content="黄明和’s MacBook Pro"/>
+    </head>
+    <body>
+        <div class="note-wrapper">
+            <h1>XCodeGhost事件然后呢</h1>
+<p>这两天，整个iOS开发者圈子都被 'XCodeGhost' 事件刷屏了，各大安全团队也都对事件，从各种角度进行分析，给我们安全外行人士还原了整个事情的前因后果，甚至已经人肉到了 'XCodeGhost' 的作者信息，苹果也下架不少的受到 'XCodeGhost' 感染的 APP. 本文我们就来梳理一下这件事情的来龙去脉吧，最后作为开发者或者普通的iOS用户，我们应该如何应对吧。</p>
+<br>
+<h3>XCodeGhost 事件</h3>
+<p>XCode 作为苹果 APP 的标准开发工具, 几乎每一位开发者或者团队都使用 XCode 去开发 APP，XCode 通过编译，链接，打包将开发者的代码变成一个个运行在我们手机中的APP, 那么如果开发者所使用的 XCode 不是苹果官方提供的版本，而是随意在某些网盘随意下载的 XCode 的话，就很难保证开发的 APP 除了正常的代码之外是否被恶意的 XCode 加入非正常的编译选项，然后植入恶意代码模块，后果将不堪设想。</p>
+<br>
+<p>XCodeGhost 事件就是这么一个事件，由于网络原因，国内不少开发者没有下载使用苹果官方提供的 XCode 开发工具，而是图下载速度快，在某网盘，或者迅雷上下载 XCode, 更加让人不可思议的事，XCodeChost 作者似乎很懂 SEO，通过百度搜索 XCode 出来的页面，除了指向苹果 AppStore 的那几个链接之外，都是指向各种不同 ID 的百度网盘上，这些网盘的地址在各个开发社区，人气社区，下载站点上帖子均有存在，而根据腾讯安全应急响应中心的报告，从这些网盘上下载的 XCode, 在路径 Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/Library/Frameworks/CoreServices.framework/下，存在一个名为CoreServices.framework的 "系统组件" , 而从苹果官方下载的xcode安装包，却不存在这些目录和系统组件。也就是说，从这些网盘上下载的 XCode 安装包中，被别有用心的人植入了远程控制模块，通过修改 XCode 的编译参数，将这个恶意模块自动的部署到任何通过这个 XCode 编译的苹果 APP 中。</p>
+<br>
+<h3>XCodeGhost 的危害</h3>
+<p>被植入这些恶意模块的 APP 将成为了黑客控制用户的工具，在 APP 受到污染之后.</p>
+<br>
+<ul><li>启动、后台、恢复、结束时上报信息至黑客控制的服务器, 上报的信息包括：APP版本、APP名称、本地语言、iOS版本、设备类型、国家码等设备信息，能精准的区分每一台iOS设备。上报的域名是<a href="http://icloud-analysis.com">icloud-analysis.com</a>，同时腾讯安全应急中心还发现了攻击者的其他三个尚未使用的域名。
+</li></ul>
+<br>
+<ul><li>通过 openURL 这个API, 黑客可以下发伪协议命令在受感染的iPhone中执行, 黑客能够通过上报的信息区分每一台iOS设备，然后如同已经上线的肉鸡一般，随时、随地、给任何人下发伪协议指令，不仅能够在受感染的iPhone中完成打开网页、发短信、打电话等常规手机行为，甚至还可以操作具备伪协议能力的大量第三方APP。实际上，iPhone上的APP如果被感染，完全可以理解为黑客已经基本控制了你的手机！
+</li></ul>
+<br>
+<ul><li>黑客可以在受感染的 iPhone 中弹出内容由服务器控制的对话框窗口, 和远程执行指令类似，黑客也可以远程控制弹出任何对话框窗口。至于用途，将机器硬件数据上报、远程执行伪协议命令、远程弹窗这几个关键词连起来，反正我们是能够通过这几个功能，用一点点社工和诱导的方式，在受感染的iPhone中安装企业证书APP。
+</li></ul>
+<br>
+<ul><li>远程控制模块协议存在漏洞，可被中间人攻击, 在进行样本分析的同时，腾讯安全应急中心还发现这个恶意模块的网络协议加密存问题，可以被轻易暴力破解。我们尝试了中间人攻击，验证确实可以代替服务器下发伪协议指令到手机，成为这些肉鸡的新主人。
+</li></ul>
+<br>
+<p>植入的远程控制模块并不只一个版本。而现已公开的分析中，都未指出模块具备远程控制能力和自定义弹窗能力，而远程控制模块本身还存在漏洞可被中间人攻击，组合利用的威力可想而知。这个事件的危害其实被大大的低估了。</p>
+<br>
+<h3>有哪些已知的 APP 受到污染呢</h3>
+<p>目前发现的受到污染的 APP 名单如下。</p>
+<br>
+<ul><li>网易云音乐
+</li><li>滴滴出行
+</li><li>12306
+</li><li>中国联通手机营业厅
+</li><li>高德地图
+</li><li>简书
+</li><li>豌豆荚的开眼
+</li><li>网易公开课
+</li><li>下厨房
+</li><li>51 卡保险箱
+</li><li>同花顺
+</li><li>中信银行动卡空间
+</li><li>微信
+</li><li>口袋记账
+</li><li>滴滴打车
+</li><li>喜马拉雅
+</li><li>夫妻床头话
+</li><li>我叫 MT
+</li></ul>
+<br>
+<h3>我们该怎么办呢</h3>
+<p>作为开发者，当然是确定自己 XCode 没有包含上述所说的模块，本人使用的任何软件基本是都是在官方网站上下载的，基本上没有什么问题。</p>
+<br>
+<p>作为普通的 iOS 用户，应该第一时间更改自己的 APP ID 的密码，如果担心自己在 iOS 设备输入的其他的密码有被盗的可能，那么也十分有必要进行修改.</p>
+<br>
+<h3>最后</h3>
+<p>XCodeGhost 作者 @XcodeGhostSource 最后还将代码开发到 GitHub 上面: <a href="https://github.com/XcodeGhostSource/XcodeGhost">https://github.com/XcodeGhostSource/XcodeGhost</a>, 并且声明说所谓的XcodeGhost实际是苦逼iOS开发者的一次意外发现：修改Xcode编译配置文本可以加载指定的代码文件，于是我写下上述附件中的代码去尝试，并上传到自己的网盘中... , 不知道各位客官怎么看，反正我是不相信啊，正如 @onevcat 所说的: 算个账，微信用户总数5亿日活70%。每天每人就算5个POST请求，每个请求300Byte，日流入流量就接近500G，以及17.5亿次请求。据说服务器扔在亚马逊，那么资费算一下每个月应该是存储$450，请求$260K。这还只是单单一个微信，再算上网易云音乐等等，每月四五十万刀仅仅是苦逼iOS开发者的个人实验？</p>
+        </div>
+        <script type="text/javascript">
+            (function() {
+
+    var doc_ols = document.getElementsByTagName("ol");
+
+    for ( i=0; i<doc_ols.length; i++) {
+
+        var ol_start = doc_ols[i].getAttribute("start") - 1;
+        doc_ols[i].setAttribute("style", "counter-reset:ol " + ol_start + ";");
+
+    }
+
+})();
+        </script>
+        <style>
+            html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td,article,aside,canvas,details,embed,figure,figcaption,footer,header,hgroup,menu,nav,output,ruby,section,summary,time,mark,audio,video{margin:0;padding:0;border:0;font:inherit;font-size:100%;vertical-align:baseline}html{line-height:1}ol,ul{list-style:none}table{border-collapse:collapse;border-spacing:0}caption,th,td{text-align:left;font-weight:normal;vertical-align:middle}q,blockquote{quotes:none}q:before,q:after,blockquote:before,blockquote:after{content:"";content:none}a img{border:none}article,aside,details,figcaption,figure,footer,header,hgroup,main,menu,nav,section,summary{display:block}*{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box}html{font-size:87.5%;line-height:1.57143em}html{font-size:14px;line-height:1.6em;-webkit-text-size-adjust:100%}body{background:#fcfcfc;color:#545454;text-rendering:optimizeLegibility;font-family:"AvenirNext-Regular"}a{color:#de4c4f;text-decoration:none}h1{font-family:"AvenirNext-Medium";color:#333;font-size:1.6em;line-height:1.3em;margin-bottom:.78571em}h2{font-family:"AvenirNext-Medium";color:#333;font-size:1.3em;line-height:1em;margin-bottom:.62857em}h3{font-family:"AvenirNext-Medium";color:#333;font-size:1.15em;line-height:1em;margin-bottom:.47143em}p{margin-bottom:1.57143em;hyphens:auto}hr{height:1px;border:0;background-color:#dedede;margin:-1px auto 1.57143em auto}ul,ol{margin-bottom:.31429em}ul ul,ul ol,ol ul,ol ol{margin-bottom:0px}ol li:before{content:counter(ol) ".";counter-increment:ol;color:#e06e73;text-align:right;display:inline-block;min-width:1em;margin-right:0.5em}b,strong{font-family:"AvenirNext-Bold"}i,em{font-family:"AvenirNext-Italic"}code{font-family:"Menlo-Regular"}.text-overflow-ellipsis{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sf_code_syntax_string{color:#D33905}.sf_code_syntax_comment{color:#838383}.sf_code_syntax_documentation_comment{color:#128901}.sf_code_syntax_number{color:#0E73A2}.sf_code_syntax_project{color:#5B2599}.sf_code_syntax_keyword{color:#0E73A2}.sf_code_syntax_character{color:#1B00CE}.sf_code_syntax_preprocessor{color:#920448}.note-wrapper{max-width:46em;margin:0px auto;padding:1.57143em 3.14286em}.note-wrapper.spotlight-preview{overflow-x:hidden}u{text-decoration:none;background-image:linear-gradient(to bottom, rgba(0,0,0,0) 50%,#e06e73 50%);background-repeat:repeat-x;background-size:2px 2px;background-position:0 1.05em}s{color:#878787}p{margin-bottom:0.1em}hr{margin-bottom:0.7em;margin-top:0.7em}ul li{text-indent:-0.35em}ul li:before{content:"•";color:#e06e73;display:inline-block;margin-right:0.3em}ul ul{margin-left:1.25714em}ol li{text-indent:-1.45em}ol ol{margin-left:1.25714em}blockquote{display:block;margin-left:-1em;padding-left:0.8em;border-left:0.2em solid #e06e73}.todo-list ul{margin-left:1.88571em}.todo-list li{text-indent:-1.75em}.todo-list li:before{content:"";display:static;margin-right:0px}.todo-checkbox{text-indent:-1.7em}.todo-checkbox svg{margin-right:0.3em;position:relative;top:0.2em}.todo-checkbox svg #check{display:none}.todo-checkbox.todo-checked #check{display:inline}.todo-checkbox.todo-checked .todo-text{text-decoration:line-through;color:#878787}.code-inline{display:inline;background:white;border:solid 1px #dedede;padding:0.2em 0.5em;font-size:0.9em}.code-multiline{display:block;background:white;border:solid 1px #dedede;padding:0.7em 1em;font-size:0.9em;overflow-x:auto}.hashtag{display:inline-block;color:white;background:#b8bfc2;padding:0.0em 0.5em;border-radius:1em;text-indent:0}.hashtag a{color:#fff}.address a{color:#545454;background-image:linear-gradient(to bottom, rgba(0,0,0,0) 50%,#0da35e 50%);background-repeat:repeat-x;background-size:2px 2px;background-position:0 1.05em}.address svg{position:relative;top:0.2em;display:inline-block;margin-right:0.2em}.color-preview{display:inline-block;width:1em;height:1em;border:solid 1px rgba(0,0,0,0.3);border-radius:50%;margin-right:0.1em;position:relative;top:0.2em;white-space:nowrap}.color-code{margin-right:0.2em;font-family:"Menlo-Regular";font-size:0.9em}.color-hash{opacity:0.4}.ordered-list-number{color:#e06e73;text-align:right;display:inline-block;min-width:1em}.arrow svg{position:relative;top:0.08em;display:inline-block;margin-right:0.15em;margin-left:0.15em}.arrow svg #rod{stroke:#545454}.arrow svg #point{fill:#545454}mark{color:inherit;display:inline;padding:0.2em 0.5em;background-color:#fcffc0}img{max-width:100%;height:auto}
+
+        </style>
+    </body>
+</html>

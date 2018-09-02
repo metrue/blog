@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>自己动手写一个vim插件吧</title>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="created" content="2018-09-01T22:00:14+0800"/>
+        <meta name="modified" content="2018-09-02T16:59:41+0800"/>
+        <meta name="tags" content=""/>
+        <meta name="last device" content="黄明和’s MacBook Pro"/>
+    </head>
+    <body>
+        <div class="note-wrapper">
+            <h1>自己动手写一个vim插件吧</h1>
+<br>
+<p>每一个程序员都应该有洁癖, 这个洁癖应该包括两个方面:</p>
+<p>一是代码书写的整洁，二是代码逻辑的清晰简洁。第二点需要我们不断的学习，大量的阅读思考，日积月累才能做到，因为逻辑的清晰，需要我们的良好的算法设计，结构优化，性能调优等等，只有长期的知识积累才能做到。然后代码书写的整洁却是我们可以随时做到，而且各种各样的</p>
+<p>IDE</p>
+<p>也都有着良好的美化功能。所以整洁的代码书写如果我们不想自己动手去整理，我们大可以让我们的工具帮我们来完成。</p>
+<br>
+<p>vim一直是我的主打编辑器，尝试了其他很多编辑器之后，我还是回到了vim。有了</p>
+<p><a href="https://github.com/VundleVim/Vundle.vim">vundle</a>,</p>
+<p>vim实在是太方便了，无数优良的插件，让我们的vim几乎可以完成我们日常中所有需求。来到了 <a href="secondspectrum.com">secondspectrum</a></p>
+<p>之后，我的每一段代码至少都会被一位同事 review,</p>
+<p>所以良好的代码风格，整洁的代码书写真的关乎颜面啊，所有前天我同事和我说，我的代码里面有很很多句尾空格，能不能去掉。我大惊.</p>
+<p> :set list </p>
+<p>一看，果然好多句尾空格，想了一下，总不能不同敲击 :%s/\s+$//g 来去掉这烦人的东西吧，还是google看看有没有可以用的插件吧，搜了一圈，没有看到合适的(莫非我姿势不对?)。</p>
+<br>
+<p>好吧，那就自己来做一个吧。</p>
+<br>
+<h3>开始动手吧</h3>
+<p>我们知道写vim的插件使用</p>
+<p>[vimL](<a href="https://en.wikipedia.org/wiki/Vim_(text_editor)#Vim_script)">https://en.wikipedia.org/wiki/Vim_(text_editor)#Vim_script)</a>, 当然现在我们也可以使用 Ruby, Python 等来编写 vim 插件，不过 vimL 其实也不难，简单看看就可以使用了。</p>
+<br>
+<ul><li>构建Pathogen/Vundle/NeoBundle/Plug/VAM-compatible 的插件项目结构
+</li></ul>
+<br>
+<pre><code class='code-multiline'>初始化你的插件目录如下:</code></pre>
+<br>
+<pre><code class='code-multiline'>
+~/.vim/autoload/...
+      /doc/...
+      /autoload/...
+      /ftplugin/...
+      /indent/...
+      /plugin/...
+      /syntax/...
+      /...
+</code></pre>
+<p><br></p>
+<p>让我们来简单了解一下各个目录和文件都有什么用吧。</p>
+<br>
+<ol start="1"><li>autoload
+</li></ol>
+<p>vim 插件和常规使用的一些 functions</p>
+<ol start="2"><li>doc
+</li></ol>
+<p>文档</p>
+<ol start="3"><li>ftplugin
+</li></ol>
+<p>使用于指定文件类型的vim插件脚本, 这里面所有以 .vim  结尾的文件在检测到文件类型之后，如果文件名匹配都会被  source .</p>
+<ol start="4"><li>indent
+</li></ol>
+<p>针对指定文件类型的缩紧设置</p>
+<ol start="5"><li>plugin
+</li></ol>
+<p>标准的vim插件, 这里所有以  .vim  结尾的文件在 vim 启动的时候都会被  source </p>
+<ol start="6"><li>syntax
+</li></ol>
+<p>这里放置的是语法高亮设置。</p>
+<br>
+<p>有了这些基本了解之后，我们就可以开始动手了</p>
+<br>
+<ul><li>编写插件代码
+</li></ul>
+<br>
+<p>给我的插件命名为 ’trims' 吧，简单但是不明了。</p>
+<br>
+<pre><code class='code-multiline'>  $ mkdir trims
+  $ cd trims
+  $ mkdir doc plugin
+  $ echo "a simple vim plugin to remove space in the end of line" &gt; README</code></pre>
+<p><br></p>
+<p>我们的插件只要这么简单的结构就可以了。</p>
+<br>
+<pre><code class='code-multiline'>  $ vim plugin/trims.vim</code></pre>
+<br>
+内容添加如下:
+
+<pre><code class='code-multiline'>fun! TrimWhitespace()
+  let l:save_cursor = getpos('.')
+  %s/\s\+$//e
+  call setpos('.', l:save_cursor)
+endfun
+
+" trim end of line space hook
+autocmd BufWritePre &lt;buffer&gt; call TrimWhitespace()</code></pre>
+<p><br></p>
+<p>这样我们就完成了我们的插件书写，内容很简单，对吧。一个函数  TrimWhitespace() , 使用正则替换掉句尾的空格，然后在我们保持我们的文件 :w, 就调用我们的函数。</p>
+<br>
+<ul><li>测试我们的插件
+</li></ul>
+<br>
+<p>我们可以很简单的测试我们插件，我们可以在我们的  ~/.vimrc  添加  source /path/to/trims.vim, 或者我们把我们整个 trims 目录copy到我们的插件目录下。然后随意编辑一个文件，然后保存即可看到效果。</p>
+<br>
+<ul><li>发布我们的插件
+</li></ul>
+<br>
+<p>写好插件，我们当然希望可以帮助到其他人喽，如何让我们以及其他人可以简单的使用我们的插件呢，vundle 当然是最方便的啦。</p>
+<br>
+<ol start="1"><li>push 插件到 <a href="https://github.com">GitHub</a>
+</li></ol>
+<br>
+<p>先到  <a href="https://github.com">GitHub</a> 上开一个 repo，比如我们就叫做 "trims", 然后push我们的插件到repo上。</p>
+<br>
+<pre><code class='code-multiline'>  $ cd trims
+  $ git init
+
+  $ git remote add origin https://github.com/metrue/trims.git
+  $ git push -u origin master</code></pre>
+<p><br></p>
+<ol start="2"><li>配置 .vimrc 按照并且使用我们的插件
+</li></ol>
+<br>
+<p>首先，当然要先确保你已经安装并且配置好了</p>
+<p><a href="https://github.com/VundleVim/Vundle.vim">vundle</a>, 然后在你的  ~/.vimrc  中添加</p>
+<br>
+<pre><code class='code-multiline'>  Plugin 'metrue/trims'</code></pre>
+<br>
+然后运行 vim, 运行  :BundleInstall . 安装完毕之后，你的vim就可以使用我们自己写的去掉句尾空格的插件了.
+
+<h3>结尾</h3>
+本文demo的插件地址:
+<a href="https://github.com/metrue/trims">https://github.com/metrue/trims</a>
+        </div>
+        <script type="text/javascript">
+            (function() {
+
+    var doc_ols = document.getElementsByTagName("ol");
+
+    for ( i=0; i<doc_ols.length; i++) {
+
+        var ol_start = doc_ols[i].getAttribute("start") - 1;
+        doc_ols[i].setAttribute("style", "counter-reset:ol " + ol_start + ";");
+
+    }
+
+})();
+        </script>
+        <style>
+            html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td,article,aside,canvas,details,embed,figure,figcaption,footer,header,hgroup,menu,nav,output,ruby,section,summary,time,mark,audio,video{margin:0;padding:0;border:0;font:inherit;font-size:100%;vertical-align:baseline}html{line-height:1}ol,ul{list-style:none}table{border-collapse:collapse;border-spacing:0}caption,th,td{text-align:left;font-weight:normal;vertical-align:middle}q,blockquote{quotes:none}q:before,q:after,blockquote:before,blockquote:after{content:"";content:none}a img{border:none}article,aside,details,figcaption,figure,footer,header,hgroup,main,menu,nav,section,summary{display:block}*{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box}html{font-size:87.5%;line-height:1.57143em}html{font-size:14px;line-height:1.6em;-webkit-text-size-adjust:100%}body{background:#fcfcfc;color:#545454;text-rendering:optimizeLegibility;font-family:"AvenirNext-Regular"}a{color:#de4c4f;text-decoration:none}h1{font-family:"AvenirNext-Medium";color:#333;font-size:1.6em;line-height:1.3em;margin-bottom:.78571em}h2{font-family:"AvenirNext-Medium";color:#333;font-size:1.3em;line-height:1em;margin-bottom:.62857em}h3{font-family:"AvenirNext-Medium";color:#333;font-size:1.15em;line-height:1em;margin-bottom:.47143em}p{margin-bottom:1.57143em;hyphens:auto}hr{height:1px;border:0;background-color:#dedede;margin:-1px auto 1.57143em auto}ul,ol{margin-bottom:.31429em}ul ul,ul ol,ol ul,ol ol{margin-bottom:0px}ol li:before{content:counter(ol) ".";counter-increment:ol;color:#e06e73;text-align:right;display:inline-block;min-width:1em;margin-right:0.5em}b,strong{font-family:"AvenirNext-Bold"}i,em{font-family:"AvenirNext-Italic"}code{font-family:"Menlo-Regular"}.text-overflow-ellipsis{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sf_code_syntax_string{color:#D33905}.sf_code_syntax_comment{color:#838383}.sf_code_syntax_documentation_comment{color:#128901}.sf_code_syntax_number{color:#0E73A2}.sf_code_syntax_project{color:#5B2599}.sf_code_syntax_keyword{color:#0E73A2}.sf_code_syntax_character{color:#1B00CE}.sf_code_syntax_preprocessor{color:#920448}.note-wrapper{max-width:46em;margin:0px auto;padding:1.57143em 3.14286em}.note-wrapper.spotlight-preview{overflow-x:hidden}u{text-decoration:none;background-image:linear-gradient(to bottom, rgba(0,0,0,0) 50%,#e06e73 50%);background-repeat:repeat-x;background-size:2px 2px;background-position:0 1.05em}s{color:#878787}p{margin-bottom:0.1em}hr{margin-bottom:0.7em;margin-top:0.7em}ul li{text-indent:-0.35em}ul li:before{content:"•";color:#e06e73;display:inline-block;margin-right:0.3em}ul ul{margin-left:1.25714em}ol li{text-indent:-1.45em}ol ol{margin-left:1.25714em}blockquote{display:block;margin-left:-1em;padding-left:0.8em;border-left:0.2em solid #e06e73}.todo-list ul{margin-left:1.88571em}.todo-list li{text-indent:-1.75em}.todo-list li:before{content:"";display:static;margin-right:0px}.todo-checkbox{text-indent:-1.7em}.todo-checkbox svg{margin-right:0.3em;position:relative;top:0.2em}.todo-checkbox svg #check{display:none}.todo-checkbox.todo-checked #check{display:inline}.todo-checkbox.todo-checked .todo-text{text-decoration:line-through;color:#878787}.code-inline{display:inline;background:white;border:solid 1px #dedede;padding:0.2em 0.5em;font-size:0.9em}.code-multiline{display:block;background:white;border:solid 1px #dedede;padding:0.7em 1em;font-size:0.9em;overflow-x:auto}.hashtag{display:inline-block;color:white;background:#b8bfc2;padding:0.0em 0.5em;border-radius:1em;text-indent:0}.hashtag a{color:#fff}.address a{color:#545454;background-image:linear-gradient(to bottom, rgba(0,0,0,0) 50%,#0da35e 50%);background-repeat:repeat-x;background-size:2px 2px;background-position:0 1.05em}.address svg{position:relative;top:0.2em;display:inline-block;margin-right:0.2em}.color-preview{display:inline-block;width:1em;height:1em;border:solid 1px rgba(0,0,0,0.3);border-radius:50%;margin-right:0.1em;position:relative;top:0.2em;white-space:nowrap}.color-code{margin-right:0.2em;font-family:"Menlo-Regular";font-size:0.9em}.color-hash{opacity:0.4}.ordered-list-number{color:#e06e73;text-align:right;display:inline-block;min-width:1em}.arrow svg{position:relative;top:0.08em;display:inline-block;margin-right:0.15em;margin-left:0.15em}.arrow svg #rod{stroke:#545454}.arrow svg #point{fill:#545454}mark{color:inherit;display:inline;padding:0.2em 0.5em;background-color:#fcffc0}img{max-width:100%;height:auto}
+
+        </style>
+    </body>
+</html>

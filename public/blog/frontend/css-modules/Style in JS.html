@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Style in JS</title>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="created" content="2018-09-01T22:00:14+0800"/>
+        <meta name="modified" content="2018-09-02T17:10:15+0800"/>
+        <meta name="tags" content=""/>
+        <meta name="last device" content="黄明和’s MacBook Pro"/>
+    </head>
+    <body>
+        <div class="note-wrapper">
+            <h1>Style in JS</h1>
+<br>
+<h3>CSS Modules 是什么</h3>
+<p>原生 css 写起来是让人泄气的, 因为 css 的编程能力太弱了。没有灵活的编程能力，css 的模块化就是面临很多问题。所以有的人使用 JavaScript 来写样式，这样就是使得样式的编写和其它 JavaScript 代码一样，具备灵活性和容易模块化。但是这种方式对于伪类却显得很乏力。</p>
+<br>
+<p>在出现 React 之前，人们某种程度上已经满足于 Sass/Less 预处理器带来的便捷。但是当 React 出现之后, JavaScript, HTML, CSS 又奇迹般的睡在了一起，JSX 给开发者带来了一致的代码写作体验，但是使用 JavaScript 的 Object 来定义样式，灵活和模块化都做到了，然后伪类还是很繁复，甚至需要监听鼠标时间来改变组件 state 中的伪类标记来引入不同的样式。而且在 JavaScript 代码中直接定义样式，对于工程师来说当然是喜闻乐见，但是对于设计师/UI来说，可不是很好玩。</p>
+<br>
+<p>那么有没有一种方案，能够使用原生的 CSS 来写样式，又富有灵活性和优良的模块化呢？ 答案就是 <a href="https://github.com/css-modules/css-modules">css-modules</a>.   它具备三个杀手锏的特性: 模块化, 无污染以及清晰显式的组合.  三个示例你就是基本上了解了其灵活的用法。</p>
+<br>
+<ul><li>局部样式
+</li></ul>
+<br>
+<pre><code class='code-multiline'>.className {
+  color: green;
+}
+
+// 或者
+
+:local(.className) {
+  color: green;
+}</code></pre>
+<p><br></p>
+<ul><li>全局样式
+</li></ul>
+<br>
+<pre><code class='code-multiline'>:global(.className) {
+  color: green;
+}</code></pre>
+<p><br></p>
+<ul><li>组合 (compose)
+</li></ul>
+<br>
+<pre><code class='code-multiline'>.baseReadOnlyInputStyle {
+  outline: none;
+  box-shadow: inset 0px 0px 0px 0px red;
+  word-break: break-word;
+  display: inline;
+  width: 80%;
+  min-width: 48px ;
+  cursor: text;
+}
+
+.onHoverInputStyle:hover {
+  text-decoration-style: dashed;
+}
+
+.inputDisabled {
+  composes: baseReadOnlyInputStyle onHoverInputStyle;
+}</code></pre>
+<p><br></p>
+<p>上面的三点基本上就解决了传统的 CSS 的大多数问题。 使用原生 CSS 写样式，通过 JavaScript 来管理样式的注入，这就是 <a href="https://github.com/css-modules/css-modules">css-modules</a> 深得人心的原因。配合 React 使用的体验是超级爽, 只要在你的 webpack 配置文件中添加下面几行即可:</p>
+<br>
+<pre><code class='code-multiline'>{
+  test: /\.css$/,
+  loader: 'css-loader?modules&importLoaders=1&localIdentName=[name]__[local]___[hash:base64:5]',
+}</code></pre>
+<p><br></p>
+<h3>炫酷的特性</h3>
+<br>
+<ul><li>类
+</li></ul>
+<br>
+<p>styles.css</p>
+<pre><code class='code-multiline'>.title {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.email {
+  padding: .5rem;
+}
+
+.submitButton {
+  padding: .5rem;
+  margin-top: .5rem;
+  border: 1px solid #2F79AD;
+  border-radius: 4px;
+  background-color: #6DB9EE;
+}
+
+.submitButton:hover {
+  background-color: #2F79AD;
+}</code></pre>
+<p><br></p>
+<p>app.jsx</p>
+<pre><code class='code-multiline'>import React from 'react';
+import styles from './styles.css';
+
+class Signup extends React.Component {
+  render() {
+    return (
+      &lt;div&gt;
+        &lt;h2 className={styles.title}&gt;
+          Email gc
+        &lt;/h2&gt;
+        &lt;input className={styles.email} placeholder="Email Please"/&gt;
+        &lt;br/&gt;
+        &lt;button className={styles.submitButton}&gt;
+          Submit
+        &lt;/button&gt;
+      &lt;/div&gt;
+    );
+  }
+}
+export default Signup;</code></pre>
+<p><br></p>
+<ul><li>包含类
+</li></ul>
+<br>
+<p>styles.css</p>
+<pre><code class='code-multiline'>.button {
+  padding: .5rem;
+  margin-top: .5rem;
+  border: 1px solid #2F79AD;
+  border-radius: 4px;
+  background-color: #6DB9EE;
+}
+
+.fun .button {
+  font-weight: bold;
+  background: linear-gradient(
+    90deg,
+    #ff0000, #ffff00,
+    #00ff00, #00ffff,
+    #ff00ff, #ff0000
+  );
+}</code></pre>
+<p><br></p>
+<p>app.jsx</p>
+<pre><code class='code-multiline'>import React from 'react';
+import styles from './styles.css';
+
+class ButtonGroup extends React.Component {
+  render() {
+    return (
+      &lt;div&gt;
+        &lt;button className={styles.button}&gt;
+        Regular Button
+        &lt;/button&gt;
+        &lt;br/&gt;
+        &lt;div className={styles.fun}&gt;
+          &lt;button className={styles.button}&gt;
+            FUN BUTTON
+          &lt;/button&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    );
+  }
+}
+export default ButtonGroup;</code></pre>
+<p><br></p>
+<ul><li>组合
+</li></ul>
+<br>
+<p>utils.css</p>
+<pre><code class='code-multiline'>/* grapes are round and purple */
+.grape {
+  border: 2px solid #ff00ff;
+  border-radius: 10px;
+  background-color: purple;
+  color: white;
+}
+
+.grape:hover {
+  background-color: #ff00ff;
+}</code></pre>
+<p><br></p>
+<p>styles.css</p>
+<pre><code class='code-multiline'>.button {
+  composes: grape from './utils.css';
+  padding: .5rem;
+  margin-top: .5rem;
+}</code></pre>
+<p><br></p>
+<p>app.jsx</p>
+<pre><code class='code-multiline'>import React from 'react';
+import styles from './styles.css';
+
+class NiceButton extends React.Component {
+  render() {
+    return (
+      &lt;button className={styles.button}&gt;
+        Button
+      &lt;/button&gt;
+    );
+  }
+}
+export default NiceButton;</code></pre>
+<p><br></p>
+<ul><li>标签
+</li></ul>
+<br>
+<p>style.css</p>
+<pre><code class='code-multiline'>input.large {
+  font-size: 20px;
+}
+
+.medium input {
+  font-size: 14px;
+}
+
+.tiny * {
+  font-size: 9px;
+}</code></pre>
+<p><br></p>
+<p>app.jsx</p>
+<pre><code class='code-multiline'>import React from 'react';
+import styles from './styles.css';
+
+class InputGroup extends React.Component {
+  render() {
+    return (
+      &lt;div&gt;
+        &lt;input className={styles.large} placeholder="I am large" /&gt;
+        &lt;div className={styles.medium}&gt;
+          &lt;input placeholder="I am medium" /&gt;
+        &lt;/div&gt;
+        &lt;div className={styles.tiny}&gt;
+          &lt;input placeholder="I am so tiny" /&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+    );
+  }
+}
+export default InputGroup;</code></pre>
+<p><br></p>
+<ul><li>media query
+</li></ul>
+<br>
+<p>styles.css</p>
+<pre><code class='code-multiline'>.small {
+  opacity: 0.2;
+}
+.large {
+  opacity: 1.0;
+}
+
+@media (max-width: 600px) {
+  .small {
+    opacity: 1.0;
+  }
+  .large {
+    opacity: 0.2;
+  }
+}</code></pre>
+<p><br></p>
+<p>app.jsx</p>
+<pre><code class='code-multiline'>import React from 'react';
+import styles from './styles.css';
+
+class WindowGroup extends React.Component {
+  render() {
+    return (
+      &lt;div&gt;
+        &lt;div className={styles.small}&gt;
+          The Window is Small
+        &lt;/div&gt;
+        &lt;div className={styles.large}&gt;
+          The Window is Big
+        &lt;/div&gt;
+      &lt;/div&gt;
+    );
+  }
+}
+export default WindowGroup;</code></pre>
+<p><br></p>
+<h3>拓展阅读</h3>
+<ul><li><a href="http://blog.vjeux.com/2014/javascript/react-css-in-js-nationjs.html">React: CSS in your JS by Christopher Chedeau</a>
+</li><li><a href="https://github.com/css-modules/css-modules/tree/master/docs">css-modules docs</a>
+</li><li><a href="https://github.com/camsong/blog/issues/5">CSS Modules 详解及 React 中实践</a></li></ul>
+
+        </div>
+        <script type="text/javascript">
+            (function() {
+
+    var doc_ols = document.getElementsByTagName("ol");
+
+    for ( i=0; i<doc_ols.length; i++) {
+
+        var ol_start = doc_ols[i].getAttribute("start") - 1;
+        doc_ols[i].setAttribute("style", "counter-reset:ol " + ol_start + ";");
+
+    }
+
+})();
+        </script>
+        <style>
+            html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td,article,aside,canvas,details,embed,figure,figcaption,footer,header,hgroup,menu,nav,output,ruby,section,summary,time,mark,audio,video{margin:0;padding:0;border:0;font:inherit;font-size:100%;vertical-align:baseline}html{line-height:1}ol,ul{list-style:none}table{border-collapse:collapse;border-spacing:0}caption,th,td{text-align:left;font-weight:normal;vertical-align:middle}q,blockquote{quotes:none}q:before,q:after,blockquote:before,blockquote:after{content:"";content:none}a img{border:none}article,aside,details,figcaption,figure,footer,header,hgroup,main,menu,nav,section,summary{display:block}*{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box}html{font-size:87.5%;line-height:1.57143em}html{font-size:14px;line-height:1.6em;-webkit-text-size-adjust:100%}body{background:#fcfcfc;color:#545454;text-rendering:optimizeLegibility;font-family:"AvenirNext-Regular"}a{color:#de4c4f;text-decoration:none}h1{font-family:"AvenirNext-Medium";color:#333;font-size:1.6em;line-height:1.3em;margin-bottom:.78571em}h2{font-family:"AvenirNext-Medium";color:#333;font-size:1.3em;line-height:1em;margin-bottom:.62857em}h3{font-family:"AvenirNext-Medium";color:#333;font-size:1.15em;line-height:1em;margin-bottom:.47143em}p{margin-bottom:1.57143em;hyphens:auto}hr{height:1px;border:0;background-color:#dedede;margin:-1px auto 1.57143em auto}ul,ol{margin-bottom:.31429em}ul ul,ul ol,ol ul,ol ol{margin-bottom:0px}ol li:before{content:counter(ol) ".";counter-increment:ol;color:#e06e73;text-align:right;display:inline-block;min-width:1em;margin-right:0.5em}b,strong{font-family:"AvenirNext-Bold"}i,em{font-family:"AvenirNext-Italic"}code{font-family:"Menlo-Regular"}.text-overflow-ellipsis{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sf_code_syntax_string{color:#D33905}.sf_code_syntax_comment{color:#838383}.sf_code_syntax_documentation_comment{color:#128901}.sf_code_syntax_number{color:#0E73A2}.sf_code_syntax_project{color:#5B2599}.sf_code_syntax_keyword{color:#0E73A2}.sf_code_syntax_character{color:#1B00CE}.sf_code_syntax_preprocessor{color:#920448}.note-wrapper{max-width:46em;margin:0px auto;padding:1.57143em 3.14286em}.note-wrapper.spotlight-preview{overflow-x:hidden}u{text-decoration:none;background-image:linear-gradient(to bottom, rgba(0,0,0,0) 50%,#e06e73 50%);background-repeat:repeat-x;background-size:2px 2px;background-position:0 1.05em}s{color:#878787}p{margin-bottom:0.1em}hr{margin-bottom:0.7em;margin-top:0.7em}ul li{text-indent:-0.35em}ul li:before{content:"•";color:#e06e73;display:inline-block;margin-right:0.3em}ul ul{margin-left:1.25714em}ol li{text-indent:-1.45em}ol ol{margin-left:1.25714em}blockquote{display:block;margin-left:-1em;padding-left:0.8em;border-left:0.2em solid #e06e73}.todo-list ul{margin-left:1.88571em}.todo-list li{text-indent:-1.75em}.todo-list li:before{content:"";display:static;margin-right:0px}.todo-checkbox{text-indent:-1.7em}.todo-checkbox svg{margin-right:0.3em;position:relative;top:0.2em}.todo-checkbox svg #check{display:none}.todo-checkbox.todo-checked #check{display:inline}.todo-checkbox.todo-checked .todo-text{text-decoration:line-through;color:#878787}.code-inline{display:inline;background:white;border:solid 1px #dedede;padding:0.2em 0.5em;font-size:0.9em}.code-multiline{display:block;background:white;border:solid 1px #dedede;padding:0.7em 1em;font-size:0.9em;overflow-x:auto}.hashtag{display:inline-block;color:white;background:#b8bfc2;padding:0.0em 0.5em;border-radius:1em;text-indent:0}.hashtag a{color:#fff}.address a{color:#545454;background-image:linear-gradient(to bottom, rgba(0,0,0,0) 50%,#0da35e 50%);background-repeat:repeat-x;background-size:2px 2px;background-position:0 1.05em}.address svg{position:relative;top:0.2em;display:inline-block;margin-right:0.2em}.color-preview{display:inline-block;width:1em;height:1em;border:solid 1px rgba(0,0,0,0.3);border-radius:50%;margin-right:0.1em;position:relative;top:0.2em;white-space:nowrap}.color-code{margin-right:0.2em;font-family:"Menlo-Regular";font-size:0.9em}.color-hash{opacity:0.4}.ordered-list-number{color:#e06e73;text-align:right;display:inline-block;min-width:1em}.arrow svg{position:relative;top:0.08em;display:inline-block;margin-right:0.15em;margin-left:0.15em}.arrow svg #rod{stroke:#545454}.arrow svg #point{fill:#545454}mark{color:inherit;display:inline;padding:0.2em 0.5em;background-color:#fcffc0}img{max-width:100%;height:auto}
+
+        </style>
+    </body>
+</html>

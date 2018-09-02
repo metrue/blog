@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Go 开发小记之日志</title>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="created" content="2018-09-03T00:53:55+0800"/>
+        <meta name="modified" content="2018-09-03T00:54:46+0800"/>
+        <meta name="tags" content=""/>
+        <meta name="last device" content="黄明和’s MacBook Pro"/>
+    </head>
+    <body>
+        <div class="note-wrapper">
+            <h1>Go 开发小记之日志</h1>
+<br>
+<p>日志对于 Web 服务来说是不可或缺的部分，正因为如此，这个领域也催生出了很多产品，比如日志分析的统治级占领者 Splunk, 对应国内有日志易。当然开源产品方面也层出不穷，广为使用的是 <a href="https://github.com/elastic/elasticsearch">Elasticsearch</a>。良好稳定的日志系统不仅在问题查询方面让工程师事半功倍，结构化的日志数据也为产品开发和增长提供一定的数据根据.</p>
+<br>
+<p>在 Golang 开发的服务中. 如何实现结构化的日志呢，有的同学喜欢 <a href="https://github.com/uber-go/zap">zap</a>, Uber 开源的一个结构化日志工具, 我目前使用的是<a href="https://github.com/sirupsen/logrus">logrus</a>. 两者很类似。如果对性能需要很高的化，在选择之前可以做一个简单的 benchmark, 而对于小型的 Web 服务来说，选择其一应该都没有什么问题。</p>
+<br>
+<ul><li>替换掉 Go 自带的 log
+</li></ul>
+<br>
+<p>无论是用 zap 还是 logrus, 我们都可以不再使用 Golang 自带的 <a href="https://golang.org/pkg/log">log</a> 了。用更加结构化的 logging 来代替。</p>
+<br>
+<pre><code class='code-multiline'>package main
+
+import (
+  "os"
+  log "github.com/sirupsen/logrus"
+)
+
+func init() {
+  log.SetFormatter(&log.JSONFormatter{})
+  log.SetOutput(os.Stdout)
+  log.SetLevel(log.WarnLevel)
+}
+
+func main() {
+  log.Info("Hello")
+  log.Warn("Oh")
+  log.Fatal("Oops")
+}</code></pre>
+<p><br></p>
+<p>你可以看到你可以设置不同日志输入的格式，级别等, 基本上和 log 的使用差不多。</p>
+<br>
+<ul><li>Logging with Fields
+</li></ul>
+<br>
+<p>为了日志的更可用，一般我们都会给日志携带相关的信息.</p>
+<br>
+<pre><code class='code-multiline'>  log.WithFields(log.Fields{
+    "name": "john",
+    "age": 12,
+  }).Info("hello")</code></pre>
+<p><br></p>
+<p>对于很多的应用，在服务工作的不同阶段，都需要输入相关的日志信息，但是其实这些日志信息都需要输出类似的信息，这个时候我们可以使用置默认的 Fields</p>
+<br>
+<pre><code class='code-multiline'>fields := log.Fields{"request_id": request_id, "user_ip": user_ip}
+reqLogger:= log.WithFields(fields)
+reqLogger.Info("Hello")</code></pre>
+<p><br></p>
+<ul><li>给你的 Context 添加 Logger
+</li></ul>
+<br>
+<p>我自己认为的最佳实践是在 per-request 的 context 添加一个 Logger，然后在这个 request 的生命周期内来使用。</p>
+<br>
+<pre><code class='code-multiline'>logger := &logrus.Logger{
+  Out: os.Stderr,
+  // Formatter: new(logrus.JSONFormatter),
+  Formatter: new(logrus.TextFormatter),
+  Hooks:     make(logrus.LevelHooks),
+  Level:     logrus.InfoLevel,
+}
+ctx.Logger = logger.WithFields(logrus.Fields{
+  "request": map[string]string{
+    "method":     r.Method,
+    "user-agent": r.UserAgent(),
+    "request":    r.RequestURI,
+    ...
+  },
+})
+
+handle(ctx)</code></pre>
+<p><br></p>
+<p>这样就可以在 handle 中方便的使用 Logger 来记录日志了.</p>
+        </div>
+        <script type="text/javascript">
+            (function() {
+
+    var doc_ols = document.getElementsByTagName("ol");
+
+    for ( i=0; i<doc_ols.length; i++) {
+
+        var ol_start = doc_ols[i].getAttribute("start") - 1;
+        doc_ols[i].setAttribute("style", "counter-reset:ol " + ol_start + ";");
+
+    }
+
+})();
+        </script>
+        <style>
+            html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td,article,aside,canvas,details,embed,figure,figcaption,footer,header,hgroup,menu,nav,output,ruby,section,summary,time,mark,audio,video{margin:0;padding:0;border:0;font:inherit;font-size:100%;vertical-align:baseline}html{line-height:1}ol,ul{list-style:none}table{border-collapse:collapse;border-spacing:0}caption,th,td{text-align:left;font-weight:normal;vertical-align:middle}q,blockquote{quotes:none}q:before,q:after,blockquote:before,blockquote:after{content:"";content:none}a img{border:none}article,aside,details,figcaption,figure,footer,header,hgroup,main,menu,nav,section,summary{display:block}*{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box}html{font-size:87.5%;line-height:1.57143em}html{font-size:14px;line-height:1.6em;-webkit-text-size-adjust:100%}body{background:#fcfcfc;color:#545454;text-rendering:optimizeLegibility;font-family:"AvenirNext-Regular"}a{color:#de4c4f;text-decoration:none}h1{font-family:"AvenirNext-Medium";color:#333;font-size:1.6em;line-height:1.3em;margin-bottom:.78571em}h2{font-family:"AvenirNext-Medium";color:#333;font-size:1.3em;line-height:1em;margin-bottom:.62857em}h3{font-family:"AvenirNext-Medium";color:#333;font-size:1.15em;line-height:1em;margin-bottom:.47143em}p{margin-bottom:1.57143em;hyphens:auto}hr{height:1px;border:0;background-color:#dedede;margin:-1px auto 1.57143em auto}ul,ol{margin-bottom:.31429em}ul ul,ul ol,ol ul,ol ol{margin-bottom:0px}ol li:before{content:counter(ol) ".";counter-increment:ol;color:#e06e73;text-align:right;display:inline-block;min-width:1em;margin-right:0.5em}b,strong{font-family:"AvenirNext-Bold"}i,em{font-family:"AvenirNext-Italic"}code{font-family:"Menlo-Regular"}.text-overflow-ellipsis{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sf_code_syntax_string{color:#D33905}.sf_code_syntax_comment{color:#838383}.sf_code_syntax_documentation_comment{color:#128901}.sf_code_syntax_number{color:#0E73A2}.sf_code_syntax_project{color:#5B2599}.sf_code_syntax_keyword{color:#0E73A2}.sf_code_syntax_character{color:#1B00CE}.sf_code_syntax_preprocessor{color:#920448}.note-wrapper{max-width:46em;margin:0px auto;padding:1.57143em 3.14286em}.note-wrapper.spotlight-preview{overflow-x:hidden}u{text-decoration:none;background-image:linear-gradient(to bottom, rgba(0,0,0,0) 50%,#e06e73 50%);background-repeat:repeat-x;background-size:2px 2px;background-position:0 1.05em}s{color:#878787}p{margin-bottom:0.1em}hr{margin-bottom:0.7em;margin-top:0.7em}ul li{text-indent:-0.35em}ul li:before{content:"•";color:#e06e73;display:inline-block;margin-right:0.3em}ul ul{margin-left:1.25714em}ol li{text-indent:-1.45em}ol ol{margin-left:1.25714em}blockquote{display:block;margin-left:-1em;padding-left:0.8em;border-left:0.2em solid #e06e73}.todo-list ul{margin-left:1.88571em}.todo-list li{text-indent:-1.75em}.todo-list li:before{content:"";display:static;margin-right:0px}.todo-checkbox{text-indent:-1.7em}.todo-checkbox svg{margin-right:0.3em;position:relative;top:0.2em}.todo-checkbox svg #check{display:none}.todo-checkbox.todo-checked #check{display:inline}.todo-checkbox.todo-checked .todo-text{text-decoration:line-through;color:#878787}.code-inline{display:inline;background:white;border:solid 1px #dedede;padding:0.2em 0.5em;font-size:0.9em}.code-multiline{display:block;background:white;border:solid 1px #dedede;padding:0.7em 1em;font-size:0.9em;overflow-x:auto}.hashtag{display:inline-block;color:white;background:#b8bfc2;padding:0.0em 0.5em;border-radius:1em;text-indent:0}.hashtag a{color:#fff}.address a{color:#545454;background-image:linear-gradient(to bottom, rgba(0,0,0,0) 50%,#0da35e 50%);background-repeat:repeat-x;background-size:2px 2px;background-position:0 1.05em}.address svg{position:relative;top:0.2em;display:inline-block;margin-right:0.2em}.color-preview{display:inline-block;width:1em;height:1em;border:solid 1px rgba(0,0,0,0.3);border-radius:50%;margin-right:0.1em;position:relative;top:0.2em;white-space:nowrap}.color-code{margin-right:0.2em;font-family:"Menlo-Regular";font-size:0.9em}.color-hash{opacity:0.4}.ordered-list-number{color:#e06e73;text-align:right;display:inline-block;min-width:1em}.arrow svg{position:relative;top:0.08em;display:inline-block;margin-right:0.15em;margin-left:0.15em}.arrow svg #rod{stroke:#545454}.arrow svg #point{fill:#545454}mark{color:inherit;display:inline;padding:0.2em 0.5em;background-color:#fcffc0}img{max-width:100%;height:auto}
+
+        </style>
+    </body>
+</html>

@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Go 开发小记</title>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="created" content="2018-09-01T20:25:44+0800"/>
+        <meta name="modified" content="2018-09-02T18:01:10+0800"/>
+        <meta name="tags" content=""/>
+        <meta name="last device" content="黄明和’s MacBook Pro"/>
+    </head>
+    <body>
+        <div class="note-wrapper">
+            <h1>Go 开发小记</h1>
+<br>
+<h2>闲话测试</h2>
+<p>测试让我们写更好的代码，在经历的公司中，Synopsys 和 Splunk 对于测试的要求都很高，核心产品的测试覆盖非常全, 每一个 release 都有超级详细的测试报告。公司内部都有相应的团队 (QA 或者 Integration Team)来负责软件质量, 当然对于不同的产品测试的要求也不太一样，内部的工具其实对于测试就没有太高的要求。但也有例外，当时在 Second Spetrum 的时候，团队的工程师对于测试的要求较高，只服务公司内部的产品也要求比较全面的测试，团队中一些资深的工程师辅导新人的时候，有的甚至是从如何写好一个测试开始的。</p>
+<br>
+<p>来到 Udacity 之后，我对自己的要求是，每一个 feature 都必须配备对应的单元测试，对于对外的服务必须有集成测试。做 Code Review 的时候，如果没有对应的测试代码，也不会想拿到 approve.   每一个工程师都应该认识到测试的重要性， 写测试不仅可以保证了我们功能的正常运行，也让我们思考如何模块化我们的代码，思考业务场景的覆盖。而且其实测试节省我们大量的时间，在设计家工作的时候，没有任何的单元测试，你可以想象没有任何单元测试，对于开发一个重数据模型，基于事件的重交互型的 Web 应用是多么的痛苦吗，我们花了大量的时间在重复的修复同一个 bug, 印象最深的是有一个同事负责一个在不同的场景下自动生成台面的功能，由于没有测试代码，每一次为了修复一个场景的产生问题，都会导致无数的问题。最后那段代码变成一个时常堵塞的下水道，谁都不想碰，但是又总出现问题，只能硬着头皮捏着鼻子去打开修复。</p>
+<br>
+<h2>Testing in Golang</h2>
+<p>Go 有内置的测试命令 <code class='code-inline'>go test</code>，它提供了基本的测试体验。而且也天然支持 <code class='code-inline'>-cover</code>自动产生测试覆盖率，可以看到 Go 开发者对于测试的重视。</p>
+<br>
+<h3>Unit Test</h3>
+<br>
+<ul><li>基本知识
+</li></ul>
+<br>
+<p>假设我们有这样的代码: hello.go</p>
+<pre><code class='code-multiline'>package hello
+
+import (
+	"fmt"
+)
+
+func Hello(name string) string {
+	return fmt.Sprintf("Hello %s", name)
+}
+</code></pre>
+<p><br></p>
+<p>大致上我们的单元测试代码会是这样: hello_test.go</p>
+<br>
+<pre><code class='code-multiline'>package hello
+
+import "testing"
+
+func TestHello(t *testing.T) {
+	name := "Tom"
+	msg := Hello(name)
+	expect := "Hello Tom"
+	if msg != expect {
+		t.Errorf("%s != %s", msg, expect)
+	}
+}</code></pre>
+<p><br></p>
+<p>你可以看到，我们的文件名遵循这样的规则: 功能代码文件 <some name>.go, 测试代码的文件名会是 <some name>_test.go.  我们可以直接运行测试获得测试结果:</p>
+<br>
+<pre><code class='code-multiline'>$ go test
+PASS
+ok  	github.com/udacity/go-play-arround	0.007s</code></pre>
+<p><br></p>
+<p>当然我们可以直接获取覆盖率:</p>
+<br>
+<pre><code class='code-multiline'>$ go test --cover
+PASS
+coverage: 100.0% of statements
+ok  	github.com/udacity/go-play-arround	0.008s</code></pre>
+<p><br></p>
+<p>如果不喜欢自己写断言，你可以使用 <a href="https://github.com/stretchr/testify">stretchr/testify</a>这个第三库，写起来会更舒服一些。而且支持 Mocking 和 Test suite。</p>
+<br>
+<ul><li>使用不同的 package name
+</li></ul>
+<br>
+<p>我一般会使用 '<package<i>name></i>test' 这样子的包名来当作测试包名，使用不同的包名会让让我们站在外部使用者的角度来完成测试，更好的保证开放出去的 API 是不是有用。所以在我们的测试代码中，我们会变成这样:</p>
+<br>
+<pre><code class='code-multiline'>package hello_test
+
+import (
+  "testing"
+  . github.com/udacity/go-play-arround/hello
+)
+
+func TestHello(t *testing.T) {
+	name := "Tom"
+	msg := Hello(name)
+	expect := "Hello Tom"
+	if msg != expect {
+		t.Errorf("%s != %s", msg, expect)
+	}
+}</code></pre>
+<p><br></p>
+<p>你可以看到上面的代码中，我们使用了 <a href="https://golang.org/ref/spec#Import_declarations">dot import</a>, 它会把所有 <code class='code-inline'>hello</code> 这个包中 exported 出来的 identifiers 在当前包中声明。这样做呢，似乎是一种比较 clean 的做法，不过也有不同的观点. 有人会说</p>
+<br>
+<blockquote>
+<p>Since this test is testing the exported API, it doesn’t make sense to pretend to be inside of the package.</p>
+</blockquote>
+<br>
+<ul><li>使用 DATA-DOG/go-sqlmock 来测试数据库交互
+</li></ul>
+<br>
+<p>如果你的模块中有数据库的交互，在单元测试中不断的启动然后关闭数据库显然是不合适的，所以我们一般在集成测试中才会做这些耗时的操作，所以通过 <a href="https://github.com/DATA-DOG/go-sqlmock">DATA-DOG/go-sqlmock</a> 可以很轻易帮助我们进行单元测试。一个简单的测试样例可能是这样:</p>
+<br>
+<pre><code class='code-multiline'>package model
+
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	sqlmock "gopkg.in/DATA-DOG/go-sqlmock.v1"
+)
+
+func TestBuildByUdacityId(t *testing.T) {
+	conn, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer conn.Close()
+
+	rows := sqlmock.NewRows([]string{"openid", "first_name", "last_name", "email"})
+	rows.AddRow("12345", "minghe", "huang", "minghe@a.com")
+	query := "SELECT (.+) FROM users"
+	mock.ExpectQuery(query).WillReturnRows(rows)
+
+	user, err := BuildUserByUdactiyId("12345", conn)
+	assert.Equal(t, nil, err)
+	assert.Equal(t, "12345", user.OpenId)
+	if err := mock.ExpectationsWereMet(); err != nil {
+		assert.Errorf(t, err, "there were unfulfilled expectations: %s")
+	}
+}</code></pre>
+<p><br></p>
+<h3>Integration Test</h3>
+<ul><li>基本方法
+</li></ul>
+<p>集成测试是从一个外观者的角度去测试我们系统是否正常服务的保证, 这就意味着我们要保证各个组件（或者服务) 正常启动了去运行我们的集成测试.  这时候 <code class='code-inline'>TestMain</code> 就派上用场了。</p>
+<br>
+<pre><code class='code-multiline'>package main
+
+import (
+	"fmt"
+	"os"
+	"testing"
+)
+
+func setup() {
+	fmt.Println("this is setup step")
+	fmt.Println("starting up a service")
+	fmt.Println("starting up b service")
+}
+
+func teardown() {
+	fmt.Println("this is teardown step")
+	fmt.Println("stop a service")
+	fmt.Println("stop b service")
+}
+
+func TestA(t *testing.T) {
+	fmt.Println("A")
+}
+
+func TestB(t *testing.T) {
+	fmt.Println("B")
+}
+
+func TestMain(m *testing.M) {
+	setup()
+
+	ret := m.Run()
+
+	teardown()
+
+	os.Exit(ret)
+}</code></pre>
+<p><br></p>
+<p><code class='code-inline'>TestMain</code> 会在 <code class='code-inline'>go test</code>运行的时候被调用。所以我们可以在 <code class='code-inline'>setup()</code>中做一些测试准备工作，然后在 <code class='code-inline'>teardown</code>中做清理工作.</p>
+<br>
+<p>显然这样做似乎会一些问题: 因为每次运行 <code class='code-inline'>go test</code> 都会 <code class='code-inline'>TestMain</code>，而我们并不是每次都要运行集成测试，因为集成测试很多时候会涉及数据库的启动，网络服务的请求等，会花很多时间，更多的时候，我们的改动只需要运行一下单元来简单测试即可。那么怎么才能够避免每次都运行集成测试呢？</p>
+<br>
+<ul><li>testing.Short()
+</li></ul>
+<br>
+<p> <code class='code-inline'>testing.Short()</code> 会返回当我们在运行测试的时候是否指定了 <code class='code-inline'>-short</code> flag。 所以通过检查 <code class='code-inline'>testing.Short()</code> 可以来决定我们是否需要运行集成测试. 所以我们可以这样写我们的测试.</p>
+<br>
+<pre><code class='code-multiline'>package main
+
+import (
+  "flag"
+  "fmt"
+  "os"
+  "testing"
+)
+
+func setup() {
+  fmt.Println("this is setup step")
+  fmt.Println("starting up a service")
+  fmt.Println("starting up b service")
+}
+
+func teardown() {
+  fmt.Println("this is teardown step")
+  fmt.Println("stop a service")
+  fmt.Println("stop b service")
+}
+
+func TestA(t *testing.T) {
+  if testing.Short() {
+    t.Skip()
+  }
+}
+
+func TestB(t *testing.T) {
+  if testing.Short() {
+    t.Skip()
+  }
+}
+
+func TestMain(m *testing.M) {
+  flag.Parse()
+
+  if !testing.Short() {
+    setup()
+  }
+
+  ret := m.Run()
+
+  if !testing.Short() {
+    teardown()
+  }
+
+  os.Exit(ret)
+}</code></pre>
+<p><br></p>
+<p>那么能不能在进一步呢，通过检查 <code class='code-inline'>testing.Short()</code>我们决定我们是否需要启动相关服务已经运行集成测试，但是在测试代码中重复的添加 <code class='code-inline'>testing.Short()</code>显然是难看的，拓展性不好。如何能够更 Scale 呢?</p>
+<br>
+<p>日志对于 Web 服务来说是不可或缺的部分，正因为如此，这个领域也催生出了很多产品，比如日志分析的统治级占领者 Splunk, 对应国内有日志易。当然开源产品方面也层出不穷，广为使用的是 <a href="https://github.com/elastic/elasticsearch">Elasticsearch</a>。良好稳定的日志系统不仅在问题查询方面让工程师事半功倍，结构化的日志数据也为产品开发和增长提供一定的数据根据.</p>
+<br>
+<p>在 Golang 开发的服务中. 如何实现结构化的日志呢，有的同学喜欢 <a href="https://github.com/uber-go/zap">zap</a>, Uber 开源的一个结构化日志工具, 我目前使用的是<a href="https://github.com/sirupsen/logrus">logrus</a>. 两者很类似。如果对性能需要很高的化，在选择之前可以做一个简单的 benchmark, 而对于小型的 Web 服务来说，选择其一应该都没有什么问题。</p>
+<br>
+<ul><li>替换掉 Go 自带的 log
+</li></ul>
+<br>
+<p>无论是用 zap 还是 logrus, 我们都可以不再使用 Golang 自带的 <a href="https://golang.org/pkg/log">log</a> 了。用更加结构化的 logging 来代替。</p>
+<br>
+<pre><code class='code-multiline'>package main
+
+import (
+  "os"
+  log "github.com/sirupsen/logrus"
+)
+
+func init() {
+  log.SetFormatter(&log.JSONFormatter{})
+  log.SetOutput(os.Stdout)
+  log.SetLevel(log.WarnLevel)
+}
+
+func main() {
+  log.Info("Hello")
+  log.Warn("Oh")
+  log.Fatal("Oops")
+}</code></pre>
+<p><br></p>
+<p>你可以看到你可以设置不同日志输入的格式，级别等, 基本上和 log 的使用差不多。</p>
+<br>
+<ul><li>Logging with Fields
+</li></ul>
+<br>
+<p>为了日志的更可用，一般我们都会给日志携带相关的信息.</p>
+<br>
+<pre><code class='code-multiline'>  log.WithFields(log.Fields{
+    "name": "john",
+    "age": 12,
+  }).Info("hello")</code></pre>
+<p><br></p>
+<p>对于很多的应用，在服务工作的不同阶段，都需要输入相关的日志信息，但是其实这些日志信息都需要输出类似的信息，这个时候我们可以使用置默认的 Fields</p>
+<br>
+<pre><code class='code-multiline'>fields := log.Fields{"request_id": request_id, "user_ip": user_ip}
+reqLogger:= log.WithFields(fields)
+reqLogger.Info("Hello")</code></pre>
+<p><br></p>
+<ul><li>给你的 Context 添加 Logger
+</li></ul>
+<br>
+<p>我自己认为的最佳实践是在 per-request 的 context 添加一个 Logger，然后在这个 request 的生命周期内来使用。</p>
+<br>
+<pre><code class='code-multiline'>logger := &logrus.Logger{
+  Out: os.Stderr,
+  // Formatter: new(logrus.JSONFormatter),
+  Formatter: new(logrus.TextFormatter),
+  Hooks:     make(logrus.LevelHooks),
+  Level:     logrus.InfoLevel,
+}
+ctx.Logger = logger.WithFields(logrus.Fields{
+  "request": map[string]string{
+    "method":     r.Method,
+    "user-agent": r.UserAgent(),
+    "request":    r.RequestURI,
+    ...
+  },
+})
+
+handle(ctx)</code></pre>
+<p><br></p>
+<p>这样就可以在 handle 中方便的使用 Logger 来记录日志了.</p>
+<br>
+<h1>AES in Golang</h1>
+<br>
+<p>AES 是 Advanced Encryption Standard 是缩写，是一种对称式的加密算法。AES 的区块 block 长度是固定的 128 位:</p>
+<br>
+<pre><code class='code-multiline'>// The AES block size in bytes.
+const BlockSize = 16
+</code></pre>上面这段代码是在 <a href="https://github.com/golang/go/blob/master/src/crypto/aes/cipher.go#L15">Golang 的源代码中</a>, <code class='code-inline'>16 * 8 = 128</code>
+
+而密钥 key 的长度可以是 128, 192 和 256. 所以你也可以在 Golang 的<a href="https://github.com/golang/go/blob/master/src/crypto/aes/cipher.go#L33">相关代码中</a>看到相关的定义。这也就是我们为什么经常看到 AES-128, AES-192, 以及 AES-256 原因，后缀的数字128, 192, 256 指的就是 key 的长度.
+
+
+AES 有如下几种模式:
+
+<blockquote>
+需要填充的模式
+</blockquote>
+<ul><li>Electronic Codebook (ECB): 带加密的信息被分割成 blocks，然后 blocks 分别被单独加密. 这种模式的缺点是缺乏混淆性, 因为相同的 Plain Text block 会被加密成相同的 Cipher Text block. 所以数据模式的隐藏性很低。在大部分的加密场景都不推荐使用。
+</li><li>Cipher Block Chaining (CBC): CBC 在对信息进行加密的时候，Initial Value (IV) 需要随机的产生. 改信息的任何一部分都需要重新进行整个加密. 解密可以并行的进行.
+</li></ul>
+<br>
+<blockquote>
+<p>流式的加密模式</p>
+</blockquote>
+<br>
+<ul><li>Couter (CTR): CTR 的加密和解密都可以完全的并行。
+</li><li>Output Feedback (OFB): OFB 的加密和解密都能并行.
+</li><li>Cipher Feedback (CFB): OFB 的解密是并行的，但是加密不是。
+</li></ul>
+<br>
+<blockquote>
+<p>身份验证加密模式</p>
+</blockquote>
+<br>
+<ul><li>Counter with CBC-MAC (CCM): 这种模式是 CTR 和 CBC-MAC 的简单组合, 性能较差。
+</li><li>Offset Codebook Mode (OCB): 速度很快但是有专利限制.
+</li><li>Galosi/Counter Model (GCM): GCM 是 CTR 和 GHASH 的复杂组合，速度很快，但是复杂性高。
+</li></ul>
+<br>
+<p>这么多中模式，我们在工程中应该选择哪一种呢，有一个回答我十分赞同:</p>
+<p>>Considering the importance of authentication I would recommend the following two block cipher modes for most use cases (except for disk encryption purposes): If the data is authenticated by an asymmetric signature use CBC, otherwise use GCM.</p>
+<p>简单来说就是除非数据是通过非对称签名进行验证，则使用 CBC, 否则使用 GCM。</p>
+<br>
+<h3>CBC</h3>
+<br>
+<p>因为在 Golang 中 AES 已经有了现成的模块，所以我们可以很简单的就可以使用 AES 来进行加密, CBC 在输入不满足 <code class='code-inline'>aes.BlockSize</code> 的倍数的时候，需要做填充.</p>
+<br>
+<pre><code class='code-multiline'>func Pad(src []byte) []byte {
+	padding := aes.BlockSize - len(src)%aes.BlockSize
+	padtext := bytes.Repeat([]byte{byte(padding)}, padding)
+	return append(src, padtext...)
+}
+
+func Unpad(src []byte) ([]byte, error) {
+	length := len(src)
+	unpadding := int(src[length-1])
+
+	if unpadding &gt; length {
+		return src, nil
+	}
+	return src[:(length - unpadding)], nil
+}</code></pre>
+<p><br></p>
+<p>使用 <code class='code-inline'>KEY</code> 和 <code class='code-inline'>IV</code> 来进行加解密.</p>
+<br>
+<pre><code class='code-multiline'>// Encrypt AES CBC mode
+func Encrypt(key, iv, plaintext []byte) ([]byte, error) {
+	if len(plaintext)%aes.BlockSize != 0 {
+		plaintext = Pad(plaintext)
+	}
+
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return nil, err
+	}
+
+	ciphertext := make([]byte, aes.BlockSize+len(plaintext))
+	cbc := cipher.NewCBCEncrypter(block, iv)
+	cbc.CryptBlocks(ciphertext[aes.BlockSize:], plaintext)
+
+	return ciphertext, nil
+}
+
+// Decrypt AES CBC mode
+func Decrypt(key, iv, ciphertext []byte) ([]byte, error) {
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(ciphertext) &lt; aes.BlockSize {
+		return nil, fmt.Errorf("ciphertext too short")
+	}
+
+	ciphertext = ciphertext[aes.BlockSize:]
+
+	cbc := cipher.NewCBCDecrypter(block, []byte(iv))
+	plaintext := make([]byte, len(ciphertext))
+	cbc.CryptBlocks(plaintext, ciphertext)
+
+	if plaintext, err = Unpad(plaintext); err != nil {
+		return nil, err
+	}
+
+	return plaintext, nil
+}</code></pre>
+<p><br></p>
+<h3>GCM</h3>
+<br>
+<ul><li>Encrypt
+</li></ul>
+<br>
+<pre><code class='code-multiline'>func Encrypt(plaintext []byte, key *[32]byte) (ciphertext []byte, err error) {
+	block, err := aes.NewCipher(key[:])
+	if err != nil {
+		return nil, err
+	}
+
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return nil, err
+	}
+
+	nonce := make([]byte, gcm.NonceSize())
+	_, err = io.ReadFull(rand.Reader, nonce)
+	if err != nil {
+		return nil, err
+	}
+
+	return gcm.Seal(nonce, nonce, plaintext, nil), nil
+}</code></pre>
+<p><br></p>
+<ul><li>Decrypt
+</li></ul>
+<br>
+<pre><code class='code-multiline'>func Decrypt(ciphertext []byte, key *[32]byte) (plaintext []byte, err error) {
+	block, err := aes.NewCipher(key[:])
+	if err != nil {
+		return nil, err
+	}
+
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(ciphertext) &lt; gcm.NonceSize() {
+		return nil, errors.New("malformed ciphertext")
+	}
+
+	return gcm.Open(nil,
+		ciphertext[:gcm.NonceSize()],
+		ciphertext[gcm.NonceSize():],
+		nil,
+	)
+}</code></pre>
+<p><br></p>
+<h3>KEY, IV, Nonce</h3>
+<br>
+<ul><li>KEY
+</li></ul>
+<br>
+<p>KEY 当然是很重要的了，是一个你必须保密的东西。也许这就是为什么人们喜欢取名 <code class='code-inline'>XXX_SECRET_KEY</code> 的原因。在对称加密的情况下一般只要知道加密数据的 KEY, 就可以解密出来. 在非对称加密的时候，<code class='code-inline'>KEY</code> 由两部分: <code class='code-inline'>public key</code> 和 <code class='code-inline'>private key</code>. <code class='code-inline'>public key</code> 用来解密和检查签名, 而 <code class='code-inline'>private key</code> 用来加密签名。</p>
+<br>
+<ul><li>IV
+</li></ul>
+<br>
+<p>IV 是 <code class='code-inline'>initialization vector</code> 的缩写, 字面上意思是初始向量，作为加密迭代的初始输入。 IV 在不同的上下文有不太一样的意思, 但是大多数快加密操作中，<code class='code-inline'>IV</code> 应该需要随机产生和不可预测的.</p>
+<br>
+<ul><li>Nonce
+</li></ul>
+<br>
+<p>Nonce 就是 'a number used only once', 所以一个 nonce 应该且只能使用一次。</p>
+        </div>
+        <script type="text/javascript">
+            (function() {
+
+    var doc_ols = document.getElementsByTagName("ol");
+
+    for ( i=0; i<doc_ols.length; i++) {
+
+        var ol_start = doc_ols[i].getAttribute("start") - 1;
+        doc_ols[i].setAttribute("style", "counter-reset:ol " + ol_start + ";");
+
+    }
+
+})();
+        </script>
+        <style>
+            html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td,article,aside,canvas,details,embed,figure,figcaption,footer,header,hgroup,menu,nav,output,ruby,section,summary,time,mark,audio,video{margin:0;padding:0;border:0;font:inherit;font-size:100%;vertical-align:baseline}html{line-height:1}ol,ul{list-style:none}table{border-collapse:collapse;border-spacing:0}caption,th,td{text-align:left;font-weight:normal;vertical-align:middle}q,blockquote{quotes:none}q:before,q:after,blockquote:before,blockquote:after{content:"";content:none}a img{border:none}article,aside,details,figcaption,figure,footer,header,hgroup,main,menu,nav,section,summary{display:block}*{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box}html{font-size:87.5%;line-height:1.57143em}html{font-size:14px;line-height:1.6em;-webkit-text-size-adjust:100%}body{background:#fcfcfc;color:#545454;text-rendering:optimizeLegibility;font-family:"AvenirNext-Regular"}a{color:#de4c4f;text-decoration:none}h1{font-family:"AvenirNext-Medium";color:#333;font-size:1.6em;line-height:1.3em;margin-bottom:.78571em}h2{font-family:"AvenirNext-Medium";color:#333;font-size:1.3em;line-height:1em;margin-bottom:.62857em}h3{font-family:"AvenirNext-Medium";color:#333;font-size:1.15em;line-height:1em;margin-bottom:.47143em}p{margin-bottom:1.57143em;hyphens:auto}hr{height:1px;border:0;background-color:#dedede;margin:-1px auto 1.57143em auto}ul,ol{margin-bottom:.31429em}ul ul,ul ol,ol ul,ol ol{margin-bottom:0px}ol li:before{content:counter(ol) ".";counter-increment:ol;color:#e06e73;text-align:right;display:inline-block;min-width:1em;margin-right:0.5em}b,strong{font-family:"AvenirNext-Bold"}i,em{font-family:"AvenirNext-Italic"}code{font-family:"Menlo-Regular"}.text-overflow-ellipsis{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sf_code_syntax_string{color:#D33905}.sf_code_syntax_comment{color:#838383}.sf_code_syntax_documentation_comment{color:#128901}.sf_code_syntax_number{color:#0E73A2}.sf_code_syntax_project{color:#5B2599}.sf_code_syntax_keyword{color:#0E73A2}.sf_code_syntax_character{color:#1B00CE}.sf_code_syntax_preprocessor{color:#920448}.note-wrapper{max-width:46em;margin:0px auto;padding:1.57143em 3.14286em}.note-wrapper.spotlight-preview{overflow-x:hidden}u{text-decoration:none;background-image:linear-gradient(to bottom, rgba(0,0,0,0) 50%,#e06e73 50%);background-repeat:repeat-x;background-size:2px 2px;background-position:0 1.05em}s{color:#878787}p{margin-bottom:0.1em}hr{margin-bottom:0.7em;margin-top:0.7em}ul li{text-indent:-0.35em}ul li:before{content:"•";color:#e06e73;display:inline-block;margin-right:0.3em}ul ul{margin-left:1.25714em}ol li{text-indent:-1.45em}ol ol{margin-left:1.25714em}blockquote{display:block;margin-left:-1em;padding-left:0.8em;border-left:0.2em solid #e06e73}.todo-list ul{margin-left:1.88571em}.todo-list li{text-indent:-1.75em}.todo-list li:before{content:"";display:static;margin-right:0px}.todo-checkbox{text-indent:-1.7em}.todo-checkbox svg{margin-right:0.3em;position:relative;top:0.2em}.todo-checkbox svg #check{display:none}.todo-checkbox.todo-checked #check{display:inline}.todo-checkbox.todo-checked .todo-text{text-decoration:line-through;color:#878787}.code-inline{display:inline;background:white;border:solid 1px #dedede;padding:0.2em 0.5em;font-size:0.9em}.code-multiline{display:block;background:white;border:solid 1px #dedede;padding:0.7em 1em;font-size:0.9em;overflow-x:auto}.hashtag{display:inline-block;color:white;background:#b8bfc2;padding:0.0em 0.5em;border-radius:1em;text-indent:0}.hashtag a{color:#fff}.address a{color:#545454;background-image:linear-gradient(to bottom, rgba(0,0,0,0) 50%,#0da35e 50%);background-repeat:repeat-x;background-size:2px 2px;background-position:0 1.05em}.address svg{position:relative;top:0.2em;display:inline-block;margin-right:0.2em}.color-preview{display:inline-block;width:1em;height:1em;border:solid 1px rgba(0,0,0,0.3);border-radius:50%;margin-right:0.1em;position:relative;top:0.2em;white-space:nowrap}.color-code{margin-right:0.2em;font-family:"Menlo-Regular";font-size:0.9em}.color-hash{opacity:0.4}.ordered-list-number{color:#e06e73;text-align:right;display:inline-block;min-width:1em}.arrow svg{position:relative;top:0.08em;display:inline-block;margin-right:0.15em;margin-left:0.15em}.arrow svg #rod{stroke:#545454}.arrow svg #point{fill:#545454}mark{color:inherit;display:inline;padding:0.2em 0.5em;background-color:#fcffc0}img{max-width:100%;height:auto}
+
+        </style>
+    </body>
+</html>

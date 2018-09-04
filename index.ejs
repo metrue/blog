@@ -14,8 +14,12 @@
     <ul class="list">
        <% data.posts.forEach(function(post){ %>
          <li class="item">
+          <%if (post.category.length > 0) { %>
            <span class="category"> <%= post.category %> </span>
+          <% } %>
+          <%if (post.tag.length > 0) { %>
            <span class="tag"> <%= post.tag %> </span>
+          <% } %>
            <a class="title" href="<%= post.path %>"><%= post.title %></a>
         </li>
       <% }); %>

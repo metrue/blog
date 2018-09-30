@@ -31,3 +31,13 @@ li.item a {
   color: white;
   padding: 10px;
 }
+
+@media all and (max-width: 599px) {
+  .tag {
+    display: none;
+  }
+  .category {
+    display: none;
+  }
+}
+

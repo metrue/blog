@@ -1,6 +1,7 @@
 const ejs = require('ejs')
-const fs = require('fs')
+const fs = require('fs-extra')
 const path = require('path')
+const injectScripts = require('html-inject-script')
 
 const PUBLIC_DIR = './public'
 const POST_DIR = './public/blog'
@@ -18,8 +19,22 @@ const getAllFiles = dir =>
     return isDirectory ? [...files, ...getAllFiles(name)] : [...files, name]
   }, [])
 
-function main() {
+const injectStyle = (src) => {
+  const dst = `${src}.copy`
+  fs.copySync(src, dst)
+
+  const sSrc = fs.createReadStream(dst)
+  const sDst = fs.createWriteStream(src)
+  sSrc
+    .pipe(injectScripts(['/extra.js']))
+    .pipe(sDst)
+  fs.removeSync(dst)
+}
+
+function main () {
   const posts = getAllFiles(POST_DIR).map(p => {
+    injectStyle(p)
+
     const slices = p.replace('public/', '').split('/')
     const category = slices[1] || ''
     let tag = ''
@@ -31,7 +46,7 @@ function main() {
       path: p.replace('public/', ''),
       category,
       tag,
-      title: path.parse(p).name,
+      title: path.parse(p).name
     }
   })
   renderToFile('index.ejs', `${PUBLIC_DIR}/index.html`, { posts })

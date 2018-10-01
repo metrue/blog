@@ -30,6 +30,11 @@
   },
   "homepage": "https://github.com/metrue/blog",
   "dependencies": {
-    "ejs": "^2.5.5"
+    "ejs": "^2.5.5",
+    "fs-extra": "^7.0.0",
+    "randomcolor": "^0.5.3"
+  },
+  "devDependencies": {
+    "html-inject-script": "^2.0.0"
   }
 }

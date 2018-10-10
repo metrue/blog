@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+    <head><script src="/extra.js"></script>
+        <title>Go 开发小记之 AES 加密</title>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="created" content="2018-09-03T00:55:37+0800"/>
+        <meta name="modified" content="2018-09-03T00:56:08+0800"/>
+        <meta name="tags" content=""/>
+        <meta name="last device" content="黄明和’s MacBook Pro"/>
+    </head>
+    <body>
+        <div class="note-wrapper">
+            <h1> Go 开发小记之 AES 加密</h1>
+<br>
+<br>
+<p>AES 是 Advanced Encryption Standard 是缩写，是一种对称式的加密算法。AES 的区块 block 长度是固定的 128 位:</p>
+<br>
+<pre><code class='code-multiline'>// The AES block size in bytes.
+const BlockSize = 16
+</code></pre>上面这段代码是在 <a href="https://github.com/golang/go/blob/master/src/crypto/aes/cipher.go#L15">Golang 的源代码中</a>, <code class='code-inline'>16 * 8 = 128</code>
+
+而密钥 key 的长度可以是 128, 192 和 256. 所以你也可以在 Golang 的<a href="https://github.com/golang/go/blob/master/src/crypto/aes/cipher.go#L33">相关代码中</a>看到相关的定义。这也就是我们为什么经常看到 AES-128, AES-192, 以及 AES-256 原因，后缀的数字128, 192, 256 指的就是 key 的长度.
+
+
+AES 有如下几种模式:
+
+<blockquote>
+需要填充的模式
+</blockquote>
+<ul><li>Electronic Codebook (ECB): 带加密的信息被分割成 blocks，然后 blocks 分别被单独加密. 这种模式的缺点是缺乏混淆性, 因为相同的 Plain Text block 会被加密成相同的 Cipher Text block. 所以数据模式的隐藏性很低。在大部分的加密场景都不推荐使用。
+</li><li>Cipher Block Chaining (CBC): CBC 在对信息进行加密的时候，Initial Value (IV) 需要随机的产生. 改信息的任何一部分都需要重新进行整个加密. 解密可以并行的进行.
+</li></ul>
+<br>
+<blockquote>
+<p>流式的加密模式</p>
+</blockquote>
+<br>
+<ul><li>Couter (CTR): CTR 的加密和解密都可以完全的并行。
+</li><li>Output Feedback (OFB): OFB 的加密和解密都能并行.
+</li><li>Cipher Feedback (CFB): OFB 的解密是并行的，但是加密不是。
+</li></ul>
+<br>
+<blockquote>
+<p>身份验证加密模式</p>
+</blockquote>
+<br>
+<ul><li>Counter with CBC-MAC (CCM): 这种模式是 CTR 和 CBC-MAC 的简单组合, 性能较差。
+</li><li>Offset Codebook Mode (OCB): 速度很快但是有专利限制.
+</li><li>Galosi/Counter Model (GCM): GCM 是 CTR 和 GHASH 的复杂组合，速度很快，但是复杂性高。
+</li></ul>
+<br>
+<p>这么多中模式，我们在工程中应该选择哪一种呢，有一个回答我十分赞同:</p>
+<p>>Considering the importance of authentication I would recommend the following two block cipher modes for most use cases (except for disk encryption purposes): If the data is authenticated by an asymmetric signature use CBC, otherwise use GCM.</p>
+<p>简单来说就是除非数据是通过非对称签名进行验证，则使用 CBC, 否则使用 GCM。</p>
+<br>
+<h3>CBC</h3>
+<br>
+<p>因为在 Golang 中 AES 已经有了现成的模块，所以我们可以很简单的就可以使用 AES 来进行加密, CBC 在输入不满足 <code class='code-inline'>aes.BlockSize</code> 的倍数的时候，需要做填充.</p>
+<br>
+<pre><code class='code-multiline'>func Pad(src []byte) []byte {
+	padding := aes.BlockSize - len(src)%aes.BlockSize
+	padtext := bytes.Repeat([]byte{byte(padding)}, padding)
+	return append(src, padtext...)
+}
+
+func Unpad(src []byte) ([]byte, error) {
+	length := len(src)
+	unpadding := int(src[length-1])
+
+	if unpadding &gt; length {
+		return src, nil
+	}
+	return src[:(length - unpadding)], nil
+}</code></pre>
+<p><br></p>
+<p>使用 <code class='code-inline'>KEY</code> 和 <code class='code-inline'>IV</code> 来进行加解密.</p>
+<br>
+<pre><code class='code-multiline'>// Encrypt AES CBC mode
+func Encrypt(key, iv, plaintext []byte) ([]byte, error) {
+	if len(plaintext)%aes.BlockSize != 0 {
+		plaintext = Pad(plaintext)
+	}
+
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return nil, err
+	}
+
+	ciphertext := make([]byte, aes.BlockSize+len(plaintext))
+	cbc := cipher.NewCBCEncrypter(block, iv)
+	cbc.CryptBlocks(ciphertext[aes.BlockSize:], plaintext)
+
+	return ciphertext, nil
+}
+
+// Decrypt AES CBC mode
+func Decrypt(key, iv, ciphertext []byte) ([]byte, error) {
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(ciphertext) &lt; aes.BlockSize {
+		return nil, fmt.Errorf("ciphertext too short")
+	}
+
+	ciphertext = ciphertext[aes.BlockSize:]
+
+	cbc := cipher.NewCBCDecrypter(block, []byte(iv))
+	plaintext := make([]byte, len(ciphertext))
+	cbc.CryptBlocks(plaintext, ciphertext)
+
+	if plaintext, err = Unpad(plaintext); err != nil {
+		return nil, err
+	}
+
+	return plaintext, nil
+}</code></pre>
+<p><br></p>
+<h3>GCM</h3>
+<br>
+<ul><li>Encrypt
+</li></ul>
+<br>
+<pre><code class='code-multiline'>func Encrypt(plaintext []byte, key *[32]byte) (ciphertext []byte, err error) {
+	block, err := aes.NewCipher(key[:])
+	if err != nil {
+		return nil, err
+	}
+
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return nil, err
+	}
+
+	nonce := make([]byte, gcm.NonceSize())
+	_, err = io.ReadFull(rand.Reader, nonce)
+	if err != nil {
+		return nil, err
+	}
+
+	return gcm.Seal(nonce, nonce, plaintext, nil), nil
+}</code></pre>
+<p><br></p>
+<ul><li>Decrypt
+</li></ul>
+<br>
+<pre><code class='code-multiline'>func Decrypt(ciphertext []byte, key *[32]byte) (plaintext []byte, err error) {
+	block, err := aes.NewCipher(key[:])
+	if err != nil {
+		return nil, err
+	}
+
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(ciphertext) &lt; gcm.NonceSize() {
+		return nil, errors.New("malformed ciphertext")
+	}
+
+	return gcm.Open(nil,
+		ciphertext[:gcm.NonceSize()],
+		ciphertext[gcm.NonceSize():],
+		nil,
+	)
+}</code></pre>
+<p><br></p>
+<h3>KEY, IV, Nonce</h3>
+<br>
+<ul><li>KEY
+</li></ul>
+<br>
+<p>KEY 当然是很重要的了，是一个你必须保密的东西。也许这就是为什么人们喜欢取名 <code class='code-inline'>XXX_SECRET_KEY</code> 的原因。在对称加密的情况下一般只要知道加密数据的 KEY, 就可以解密出来. 在非对称加密的时候，<code class='code-inline'>KEY</code> 由两部分: <code class='code-inline'>public key</code> 和 <code class='code-inline'>private key</code>. <code class='code-inline'>public key</code> 用来解密和检查签名, 而 <code class='code-inline'>private key</code> 用来加密签名。</p>
+<br>
+<ul><li>IV
+</li></ul>
+<br>
+<p>IV 是 <code class='code-inline'>initialization vector</code> 的缩写, 字面上意思是初始向量，作为加密迭代的初始输入。 IV 在不同的上下文有不太一样的意思, 但是大多数快加密操作中，<code class='code-inline'>IV</code> 应该需要随机产生和不可预测的.</p>
+<br>
+<ul><li>Nonce
+</li></ul>
+<br>
+<p>Nonce 就是 'a number used only once', 所以一个 nonce 应该且只能使用一次。</p>
+        </div>
+        <script type="text/javascript">
+            (function() {
+
+    var doc_ols = document.getElementsByTagName("ol");
+
+    for ( i=0; i<doc_ols.length; i++) {
+
+        var ol_start = doc_ols[i].getAttribute("start") - 1;
+        doc_ols[i].setAttribute("style", "counter-reset:ol " + ol_start + ";");
+
+    }
+
+})();
+        </script>
+        <style>
+            html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td,article,aside,canvas,details,embed,figure,figcaption,footer,header,hgroup,menu,nav,output,ruby,section,summary,time,mark,audio,video{margin:0;padding:0;border:0;font:inherit;font-size:100%;vertical-align:baseline}html{line-height:1}ol,ul{list-style:none}table{border-collapse:collapse;border-spacing:0}caption,th,td{text-align:left;font-weight:normal;vertical-align:middle}q,blockquote{quotes:none}q:before,q:after,blockquote:before,blockquote:after{content:"";content:none}a img{border:none}article,aside,details,figcaption,figure,footer,header,hgroup,main,menu,nav,section,summary{display:block}*{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box}html{font-size:87.5%;line-height:1.57143em}html{font-size:14px;line-height:1.6em;-webkit-text-size-adjust:100%}body{background:#fcfcfc;color:#545454;text-rendering:optimizeLegibility;font-family:"AvenirNext-Regular"}a{color:#de4c4f;text-decoration:none}h1{font-family:"AvenirNext-Medium";color:#333;font-size:1.6em;line-height:1.3em;margin-bottom:.78571em}h2{font-family:"AvenirNext-Medium";color:#333;font-size:1.3em;line-height:1em;margin-bottom:.62857em}h3{font-family:"AvenirNext-Medium";color:#333;font-size:1.15em;line-height:1em;margin-bottom:.47143em}p{margin-bottom:1.57143em;hyphens:auto}hr{height:1px;border:0;background-color:#dedede;margin:-1px auto 1.57143em auto}ul,ol{margin-bottom:.31429em}ul ul,ul ol,ol ul,ol ol{margin-bottom:0px}ol li:before{content:counter(ol) ".";counter-increment:ol;color:#e06e73;text-align:right;display:inline-block;min-width:1em;margin-right:0.5em}b,strong{font-family:"AvenirNext-Bold"}i,em{font-family:"AvenirNext-Italic"}code{font-family:"Menlo-Regular"}.text-overflow-ellipsis{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sf_code_string,.sf_code_selector,.sf_code_attr-name,.sf_code_char,.sf_code_builtin,.sf_code_inserted{color:#D33905}.sf_code_comment,.sf_code_prolog,.sf_code_doctype,.sf_code_cdata{color:#838383}.sf_code_number,.sf_code_boolean{color:#0E73A2}.sf_code_keyword,.sf_code_atrule,.sf_code_rule,.sf_code_attr-value,.sf_code_function,.sf_code_class-name,.sf_code_class,.sf_code_regex,.sf_code_important,.sf_code_variable,.sf_code_interpolation{color:#0E73A2}.sf_code_property,.sf_code_tag,.sf_code_constant,.sf_code_symbol,.sf_code_deleted{color:#1B00CE}.sf_code_macro,.sf_code_entity,.sf_code_operator,.sf_code_url{color:#920448}.note-wrapper{max-width:46em;margin:0px auto;padding:1.57143em 3.14286em}.note-wrapper.spotlight-preview{overflow-x:hidden}u{text-decoration:none;background-image:linear-gradient(to bottom, rgba(0,0,0,0) 50%,#e06e73 50%);background-repeat:repeat-x;background-size:2px 2px;background-position:0 1.05em}s{color:#878787}p{margin-bottom:0.1em}hr{margin-bottom:0.7em;margin-top:0.7em}ul li{text-indent:-0.35em}ul li:before{content:"•";color:#e06e73;display:inline-block;margin-right:0.3em}ul ul{margin-left:1.25714em}ol li{text-indent:-1.45em}ol ol{margin-left:1.25714em}blockquote{display:block;margin-left:-1em;padding-left:0.8em;border-left:0.2em solid #e06e73}.todo-list ul{margin-left:1.88571em}.todo-list li{text-indent:-1.75em}.todo-list li:before{content:"";display:static;margin-right:0px}.todo-checkbox{text-indent:-1.7em}.todo-checkbox svg{margin-right:0.3em;position:relative;top:0.2em}.todo-checkbox svg #check{display:none}.todo-checkbox.todo-checked #check{display:inline}.todo-checkbox.todo-checked .todo-text{text-decoration:line-through;color:#878787}.code-inline{display:inline;background:white;border:solid 1px #dedede;padding:0.2em 0.5em;font-size:0.9em}.code-multiline{display:block;background:white;border:solid 1px #dedede;padding:0.7em 1em;font-size:0.9em;overflow-x:auto}.hashtag{display:inline-block;color:white;background:#b8bfc2;padding:0.0em 0.5em;border-radius:1em;text-indent:0}.hashtag a{color:#fff}.address a{color:#545454;background-image:linear-gradient(to bottom, rgba(0,0,0,0) 50%,#0da35e 50%);background-repeat:repeat-x;background-size:2px 2px;background-position:0 1.05em}.address svg{position:relative;top:0.2em;display:inline-block;margin-right:0.2em}.color-preview{display:inline-block;width:1em;height:1em;border:solid 1px rgba(0,0,0,0.3);border-radius:50%;margin-right:0.1em;position:relative;top:0.2em;white-space:nowrap}.color-code{margin-right:0.2em;font-family:"Menlo-Regular";font-size:0.9em}.color-hash{opacity:0.4}.ordered-list-number{color:#e06e73;text-align:right;display:inline-block;min-width:1em}.arrow svg{position:relative;top:0.08em;display:inline-block;margin-right:0.15em;margin-left:0.15em}.arrow svg #rod{stroke:#545454}.arrow svg #point{fill:#545454}mark{color:inherit;display:inline;padding:0.2em 0.5em;background-color:#fcffc0}img{max-width:100%;height:auto}
+
+        </style>
+    </body>
+</html>

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="initial-scale=1,maximum-scale=1,minimum-scale=1,width=device-width,user-scalable=no">
+  <meta name="renderer" content="webkit">
+  <meta name="theme-color" content="#ffffff">
+  <title> 技术杂谈- MINGHE.ME </title>
+  <meta name="description" content="写代码是那么美好的事情">
+  <meta name="keywords" content="排序,正则表达式,程序员,算法,软件开发,AJAX,Algorithm,Android,Bash,book,C++,Code Review,Coding,CSS,Database,Debug,ebook,Erlang,Game,Go,Google,HTML,IE,Java,Javascript,jQuery,Linus Torvalds,Linux,Mac,MySQL,Oracle,OS,Perl,PHP,Programmer,programming,language,Python,Ruby,SQL,Ubuntu,UI,Unix,vim,Web,AWS,lambda,serverless">
+  <link rel="shortcut icon" type="image/png" href="/favicon.png"/>
+  <link href="./style.css" type="text/css" rel="stylesheet" charset="utf-8">
+  <body>
+    <ul class="list">
+       <% data.posts.forEach(function(post){ %>
+         <li class="item">
+           <!-- TODO coment start
+            <%if (post.category.length > 0) { %>
+             <span class="category"> <%= post.category %> </span>
+            <% } %>
+            <%if (post.tag.length > 0) { %>
+             <span class="tag"> <%= post.tag %> </span>
+            <% } %>
+            TODO comment end-->
+           <a class="title" href="<%= post.path %>"><%= post.title %></a>
+        </li>
+      <% }); %>
+    </ul>
+    <footer class="footer" style="color: #000; font-weight: 200;">
+    Copyright ©2014 <a href="http://minghe.me"> minghe.me</a> | Powered by <a href="https://github.com/***REMOVED***/blog">blog</a> with <a href="https://github.com/***REMOVED***/YoYo">YoYo</a> as comment engine
+    </footer>
+  </body>
+</html>

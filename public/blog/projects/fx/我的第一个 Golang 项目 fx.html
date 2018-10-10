@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+    <head><script src="/extra.js"></script>
+        <title>我的第一个 Golang 项目 fx</title>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="created" content="2018-09-01T22:00:14+0800"/>
+        <meta name="modified" content="2018-09-02T17:21:27+0800"/>
+        <meta name="tags" content=""/>
+        <meta name="last device" content="黄明和’s MacBook Pro"/>
+    </head>
+    <body>
+        <div class="note-wrapper">
+            <h1>我的第一个 Golang 项目 fx</h1>
+<br>
+<h2>前言</h2>
+<p>fx 是我在 <a href="http://gohack2017.golangfoundation.org/">Go Hack</a>的一个小作品，Go Hack 是一个以Go语言为主要编程语言的黑客马拉松比赛。虽然我和我队友两人都是写JavaScript的前端工程师, 以Golang 零基础参加这次比赛，不过很开心我们完成了fx，也喜欢上 Golang 这门语言.</p>
+<br>
+<p>读了那么多年书，写了那么久的代码，如果说有什么概念是深入骨髓的，只能说是”函数“了。虽然在数学上和编程上，“函数”这个词有很大的不一样的，但是有一点上它们是类似:</p>
+<br>
+<pre><code class='code-multiline'>接受输入（可能为空值），然后进行处理，最后输出处理结果。</code></pre>
+<br>
+我们几乎可以用这个概念来描述所有的行为. 比如我们可以用下面的函数的来描述我们 fx 的诞生过程：
+
+<pre><code class='code-multiline'>函数 f = Go Hack (以 Golang 为项目编程语言的黑客马拉松活动)
+输入 input = [两个Go语言零基础的JavaScript工程师，两台Macbook，很多很多的功能饮料]
+fx = f(input)</code></pre>
+<p><br></p>
+<h2>fx 是什么</h2>
+<p>那么 fx 是什么呢，一句话来说就是 : fx 是一个可以把一个函数变成一个服务的工具.  一个简单的例子来说一下 fx 的功能吧. 比如你写好了很棒的函数 , 它是这样的:</p>
+<br>
+<p>func.js</p>
+<pre><code class='code-multiline'>module.exports = (input) =&gt; {
+    return parseInt(input.a, 10) + parseInt(input.b, 10)
+}</code></pre>
+<p><br></p>
+<p>它的作用就是计算两个数的和.  你把这个函数写在 <code class='code-inline'>func.js</code> 这个文件里面。 这时候你希望可以将这个函数编程一个服务，对外提供一个 url 可以供外界访问.  但是想到 nginx, web server,  api gateway…, 你头有点大了。 现在你可以简单的这样做。</p>
+<br>
+<pre><code class='code-multiline'>fx up func.js</code></pre>
+<br>
+如果一切没有什么问题，你可以得到一个url.
+
+<pre><code class='code-multiline'>$ fx list
+
++------------+---------+---------------+
+|     ID     |  STATE  |      URL      |
++------------+---------+---------------+
+| ce925443d5 | running | 0.0.0.0:40549 |
++------------+---------+---------------+</code></pre>
+<p><br></p>
+<p>访问你的服务试试看</p>
+<br>
+<pre><code class='code-multiline'>$ curl -X POST 0.0.0.0:40549 -H "Content-Type: application/json" -d '{"a": 1, "b": 1}'</code></pre>
+<br>
+你会得到 <code class='code-inline'>2</code>. 这说明你的函数已经变成了一个服务了。
+
+<h2>fx 如何工作</h2>
+fx 有两个部分组成，fx server 和 fx client, 最开始的 client 和 server 基于 websocket 进行通信，所有的交互基于 websocket message 来进行, 当时选择 websocket 的原因是因为其简单，能够快速验证我们的想法。当项目做完了演示了之后放到了 <a href="https://github.com/***REMOVED***/fx">Github</a> 之后, 收到了很多的反馈，有同学提出了可以采用 RPC 架构来做，gRPC 如雷贯耳很长时间，就是没有机会去实践，但是后来工作一直很忙，所以没有能够及时完成迁移，然后社区的力量是强大的，一个就职于意大利FBK的哥们发Email和我说，他想参与维护 fx, 我简单看了他的Github主页了之后，就直接把他放到了 collaborator   list 去了，后来他直接发了一个很大的 <a href="https://github.com/***REMOVED***/fx/pull/100/files">Pull Request</a>过来，就是用 gRPC 替换了 websocket 的，我当然就很开心的做了merge.
+
+所以现在的 fx 是一个基于 gRPC 框架的工具. 提供三个核心功能:
+<pre><code class='code-multiline'>Usage:
+  $ fx up   func1 func2 ...       deploy a function or a group of functions
+  $ fx down func1 func2 ...       destroy a function or a group of functions
+  $ fx list                       list deployed services</code></pre>
+<p><br></p>
+<p>所以整个架构也很简单，fx up 会将 function 的定义内容传递给 fx server，fx server 接受到 function 的内容了之后，匹配到正确的 Dockerfile 和对应的构建镜像所需的资源, 然后会调用 Docker Engine 的 api 去构建相应的服务，最后把生成的服务的 URL 返回给客户端.</p>
+<pre><code class='code-multiline'>                up/ deploy a function to service
+            --------------------------------------&gt;
+            &lt;--------------------------------------
+                down/ stop functions' services
+            --------------------------------------&gt;
+fx client	&lt;--------------------------------------   fx server
+
+                list/ list deployed services
+            --------------------------------------&gt;
+			&lt;--------------------------------------</code></pre>
+<p><br></p>
+<h2>fx 支持哪些编程语言</h2>
+<p>由于 fx 的一个服务的背后都是一个 Docker Container, 所以 fx 几乎可以支持所有的编程语言，由于精力有限，目前 fx 支持这些编程语言:</p>
+<ul><li>Golang
+</li><li>JavaScript/Node
+</li><li>Ruby
+</li><li>Python
+</li><li>Java
+</li><li>PHP
+</li><li>Julia
+</li></ul>
+<br>
+<h2>fx 的未来</h2>
+<p>啥未来，就是一个小工具而已。</p>
+        </div>
+        <script type="text/javascript">
+            (function() {
+
+    var doc_ols = document.getElementsByTagName("ol");
+
+    for ( i=0; i<doc_ols.length; i++) {
+
+        var ol_start = doc_ols[i].getAttribute("start") - 1;
+        doc_ols[i].setAttribute("style", "counter-reset:ol " + ol_start + ";");
+
+    }
+
+})();
+        </script>
+        <style>
+            html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td,article,aside,canvas,details,embed,figure,figcaption,footer,header,hgroup,menu,nav,output,ruby,section,summary,time,mark,audio,video{margin:0;padding:0;border:0;font:inherit;font-size:100%;vertical-align:baseline}html{line-height:1}ol,ul{list-style:none}table{border-collapse:collapse;border-spacing:0}caption,th,td{text-align:left;font-weight:normal;vertical-align:middle}q,blockquote{quotes:none}q:before,q:after,blockquote:before,blockquote:after{content:"";content:none}a img{border:none}article,aside,details,figcaption,figure,footer,header,hgroup,main,menu,nav,section,summary{display:block}*{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box}html{font-size:87.5%;line-height:1.57143em}html{font-size:14px;line-height:1.6em;-webkit-text-size-adjust:100%}body{background:#fcfcfc;color:#545454;text-rendering:optimizeLegibility;font-family:"AvenirNext-Regular"}a{color:#de4c4f;text-decoration:none}h1{font-family:"AvenirNext-Medium";color:#333;font-size:1.6em;line-height:1.3em;margin-bottom:.78571em}h2{font-family:"AvenirNext-Medium";color:#333;font-size:1.3em;line-height:1em;margin-bottom:.62857em}h3{font-family:"AvenirNext-Medium";color:#333;font-size:1.15em;line-height:1em;margin-bottom:.47143em}p{margin-bottom:1.57143em;hyphens:auto}hr{height:1px;border:0;background-color:#dedede;margin:-1px auto 1.57143em auto}ul,ol{margin-bottom:.31429em}ul ul,ul ol,ol ul,ol ol{margin-bottom:0px}ol li:before{content:counter(ol) ".";counter-increment:ol;color:#e06e73;text-align:right;display:inline-block;min-width:1em;margin-right:0.5em}b,strong{font-family:"AvenirNext-Bold"}i,em{font-family:"AvenirNext-Italic"}code{font-family:"Menlo-Regular"}.text-overflow-ellipsis{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sf_code_string,.sf_code_selector,.sf_code_attr-name,.sf_code_char,.sf_code_builtin,.sf_code_inserted{color:#D33905}.sf_code_comment,.sf_code_prolog,.sf_code_doctype,.sf_code_cdata{color:#838383}.sf_code_number,.sf_code_boolean{color:#0E73A2}.sf_code_keyword,.sf_code_atrule,.sf_code_rule,.sf_code_attr-value,.sf_code_function,.sf_code_class-name,.sf_code_class,.sf_code_regex,.sf_code_important,.sf_code_variable,.sf_code_interpolation{color:#0E73A2}.sf_code_property,.sf_code_tag,.sf_code_constant,.sf_code_symbol,.sf_code_deleted{color:#1B00CE}.sf_code_macro,.sf_code_entity,.sf_code_operator,.sf_code_url{color:#920448}.note-wrapper{max-width:46em;margin:0px auto;padding:1.57143em 3.14286em}.note-wrapper.spotlight-preview{overflow-x:hidden}u{text-decoration:none;background-image:linear-gradient(to bottom, rgba(0,0,0,0) 50%,#e06e73 50%);background-repeat:repeat-x;background-size:2px 2px;background-position:0 1.05em}s{color:#878787}p{margin-bottom:0.1em}hr{margin-bottom:0.7em;margin-top:0.7em}ul li{text-indent:-0.35em}ul li:before{content:"•";color:#e06e73;display:inline-block;margin-right:0.3em}ul ul{margin-left:1.25714em}ol li{text-indent:-1.45em}ol ol{margin-left:1.25714em}blockquote{display:block;margin-left:-1em;padding-left:0.8em;border-left:0.2em solid #e06e73}.todo-list ul{margin-left:1.88571em}.todo-list li{text-indent:-1.75em}.todo-list li:before{content:"";display:static;margin-right:0px}.todo-checkbox{text-indent:-1.7em}.todo-checkbox svg{margin-right:0.3em;position:relative;top:0.2em}.todo-checkbox svg #check{display:none}.todo-checkbox.todo-checked #check{display:inline}.todo-checkbox.todo-checked .todo-text{text-decoration:line-through;color:#878787}.code-inline{display:inline;background:white;border:solid 1px #dedede;padding:0.2em 0.5em;font-size:0.9em}.code-multiline{display:block;background:white;border:solid 1px #dedede;padding:0.7em 1em;font-size:0.9em;overflow-x:auto}.hashtag{display:inline-block;color:white;background:#b8bfc2;padding:0.0em 0.5em;border-radius:1em;text-indent:0}.hashtag a{color:#fff}.address a{color:#545454;background-image:linear-gradient(to bottom, rgba(0,0,0,0) 50%,#0da35e 50%);background-repeat:repeat-x;background-size:2px 2px;background-position:0 1.05em}.address svg{position:relative;top:0.2em;display:inline-block;margin-right:0.2em}.color-preview{display:inline-block;width:1em;height:1em;border:solid 1px rgba(0,0,0,0.3);border-radius:50%;margin-right:0.1em;position:relative;top:0.2em;white-space:nowrap}.color-code{margin-right:0.2em;font-family:"Menlo-Regular";font-size:0.9em}.color-hash{opacity:0.4}.ordered-list-number{color:#e06e73;text-align:right;display:inline-block;min-width:1em}.arrow svg{position:relative;top:0.08em;display:inline-block;margin-right:0.15em;margin-left:0.15em}.arrow svg #rod{stroke:#545454}.arrow svg #point{fill:#545454}mark{color:inherit;display:inline;padding:0.2em 0.5em;background-color:#fcffc0}img{max-width:100%;height:auto}
+
+        </style>
+    </body>
+</html>

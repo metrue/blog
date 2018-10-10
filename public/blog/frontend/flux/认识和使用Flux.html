@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+    <head><script src="/extra.js"></script>
+        <title>认识和使用Flux</title>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="created" content="2018-09-01T22:00:14+0800"/>
+        <meta name="modified" content="2018-09-02T16:42:14+0800"/>
+        <meta name="tags" content=""/>
+        <meta name="last device" content="黄明和’s MacBook Pro"/>
+    </head>
+    <body>
+        <div class="note-wrapper">
+            <h1>认识和使用Flux</h1>
+<p>Flux 不是一种框架也不是一个库，它是实现 React 单向数据流的一种新架构。在 Facebook 内部和 React 配合使用。Facebook 提供了一个 Dispatcher 库项目，dispatcher 是一种全局的 pub/sub handler，而 handler 则会将 payloads 广播到注册的回调里。 一种典型的 Flux 框架会使用 NodoJS 的 EventEmitter 模块来构建事件系统来管理应用的状态.  通过了解各个单独的模块，我们可以更加了解 Flux 架构.</p>
+<br>
+<ul><li>Actions: 一些 Helper methods 来协助数据向 Dispatcher 的传递.
+</li><li>Dispatcher: 接收 actions, 然后广播 payloads 到注册的回调。
+</li><li>Stores: 包含那些关于应用状态和逻辑，注册到 dispatcher 的容器.
+</li><li>Controller Views: React 组件，从 stores 中获取 state，然后通过
+</li></ul>
+<p>props 传递到子组件.</p>
+<br>
+<p>Flux模块示意图</p>
+<br>
+<p>那么我们的 API 和上图是什么关系呢，当我们需要和外部 (比如后端的数据API) 相互作用的时候，我们该怎么办呢，<a href="https://scotch.io/tutorials/getting-to-know-flux-the-react-js-architecture">这篇文章</a> 说在 Actions 中引入数据到整个 Flux FLow 是一种最佳方式.</p>
+<br>
+<h2>Dispatcher</h2>
+<p>Dispatcher 是整个应用的中心枢纽, 管理着整个过程。 它接收 actions 然后 dispatch actions 和数据到注册的回调中。 Dispatcher 将 payload 广播到所有注册的回调中，而且可以以特定的顺序去调用那些回调，而且可以在执行之前进行等待。你的应用中只有一个 dispatcher， 它扮演着应用的中心枢纽。</p>
+<br>
+<pre><code class='code-multiline'>
+var Dispathcer = require('flux').Dispatcher;
+var AppDispatcher = new Dispatcher();
+
+AppDispatcher.handleViewAction = function(action) {
+  this.dispatcher({
+    source: 'VIEW_ACTION',
+    action: action
+  });
+}
+
+module.exports = AppDispatcher;
+</code></pre>
+<p><br></p>
+<p>在上面的例子中，我们就创建了一个dispatcher, 然后创建了一个handleViewAction 方法。 当你想区分是view触发的actios还是 server API 触发的actions的时候，这种抽象是很有用的。 我们的方法调用 dispatch 方法，它将action payload 广播到它注册的回调里。 这个方法可以在 Stores 中发生，并且在一个 state 更新中产生结果。</p>
+<br>
+<p>整体图如下：</p>
+<p>Dispatcher dispatch</p>
+<br>
+<p>Dispatcher 最cool的地方是它可以在我们的 Stores 里面定义依赖 (Dependencies).  所以如果我们的应用里有一部分依赖于其他部分先更新，为了正确的render，Dispatcher 的 waitFor 方法会特别有用。 为了利用这个特性，我们需要保存 Dispatcher 的注册方法(registration)的返回值，所以我们可以在我们的 Store 中这么做。</p>
+<br>
+<pre><code class='code-multiline'>  ShoeStore.dispatcherIndex = AppDispatcher.register(payload) {
+
+  };</code></pre>
+<p><br></p>
+<p>在我们的 Store 中，当我们处理分发过来的 action, 我们可以使用 Dispatcher 的 waitFor 方法去保证  ShoeStore 被更新。</p>
+<br>
+<pre><code class='code-multiline'>case 'BUY_SHOES':
+  AppDispatcher.waitFor([ShoeStore.dispatcherIndex], function() {
+    CheckoutStore.purchaseStoes(ShoeStore.getSeletedShoes());
+  });</code></pre>
+<p><br></p>
+<h2>Stores</h2>
+<p>在 Flux 中， Stores 管理着我们应用的状态。也就是 Store</p>
+<p>负责管理数据，数据的获取，以及回调函数的 disapather.</p>
+<br>
+<pre><code class='code-multiline'>
+var AppDispatcher = require('../dispatcher/AppDispatcher');
+var ShoeConstants = reuquire('../constants/ShoeConstants');
+var EventEmitter = require('events').EventEmitter;
+var merge = require('react/lib/merge');
+
+var _shoes = {};
+
+function loadShoes(data) {
+  _shoes = data.shoes;
+}
+
+var ShoeStore = merge(EventEmitter.prototype, {
+  getShoes: function() {
+    return _shoes;
+  },
+
+  emitChange: function() {
+    this.emit('change');
+  },
+
+  addChangeListener: function(callback) {
+    this.on('change', callback);
+  },
+
+  removeChangeListener: function() {
+    this.removeListener('change', callback);
+  }
+});
+
+AppDispatcher.register(function(payload) {
+  var action = payload.action;
+  var text;
+
+  switch(action.actionType) {
+    case ShoeConstants.LOAD_SHOES:
+      loadShoes(action.data);
+      break;
+    default:
+      return true;
+  }
+
+  ShoeStore.emitChange();
+
+  return true;
+});
+
+module.exports = ShoeStore;</code></pre>
+<p><br></p>
+<p>上面的代码我们使用了 NodeJS 的  EventEmitter, 它让我们可以监听和广播我们的事件. 然后我们的 Views/Components 可以基于这些事件去更新。 因为我们的View Controller 监听这些事件，所以发射这些改变的事件可以让我们的 View Controller 知道我们的应用 state 已经改变，可以去获取这些状态然后保持应用的更新。 与此同时，我们也屌用了 AppDispatcher 的 register 我们的回调，着意味着我们的 Store 现在监听了 AppDispatcher 的广播。而 switch 语句则判定所到来的广播是否需要响应的action去承担。如果有相应的action响应，一个事件就会被发射，那些监听这个事件的view就会更新它们的states.</p>
+<br>
+<p>Store, Dispatch, Action, Controller View</p>
+<br>
+<p>而public方法 getShoes 则是获取所有的shoes放到 _shoes 对象中，然后在我们的组件中使用这些数据.  这只是一个简单的例子，复杂的逻辑我们可以放到这里，而不是 views，可以让我们的代码更佳整洁.</p>
+<br>
+<h2>Action Creator & Actions</h2>
+<p>Action Creators 是发送 actions 到 Dispatcher 的一组方法的集合, Actions 是通过 dispatcher 传送的真正的 payloads; Facebook 这样使用 Action 的， 一个action包含action type, 和 action data, action type 是常量(constants), 定义了什么action即将发生，而action data 则是action的数据。对于注册了的回调函数来说，action type 决定了哪一个回调函数去处理，而action data 则成为了回调函数的输入参数。</p>
+<br>
+<pre><code class='code-multiline'> var keyMirror = require('react/lib/keyMirror');
+
+ module.exports = keyMirror({
+    LOAD_SHOES: null
+ });</code></pre>
+<p><br></p>
+<p>我们使用 keyMirror 来定义我们的我们的Constants, 看下面的例子你就知道 keyMirror 的基本功能了。</p>
+<br>
+<pre><code class='code-multiline'>var keyMirror = require('keymirror');
+key = keyMirror({NAME: null});
+
+key -&gt; {NAME: 'NAME'}
+</code></pre>
+<p><br></p>
+<p>我们来看看相应的 Action Creator 怎么定义吧:</p>
+<br>
+<pre><code class='code-multiline'>var AppDispatcher = require('../dispatcher/AppDispatcher');
+var ShoeStoreConstants = require('../constants/ShoeStoreConstants');
+
+var ShoeStoreActions = {
+  loadShoes: function(data) {
+    AppDispatcher.handleAction({
+      actionType: ShoeStoreConstants.LOAD_SHOES,
+      data: data
+    });
+  };
+};
+
+module.exports = ShoeStoreActions;</code></pre>
+<p><br></p>
+<p>在上面的代码中，我们创建了一个loadStores的action，通过 dispatcher 广播这个 action， 这样 ShoeStore 里面就会听到这个事件，然后调用相应的方法去装载一些shoes。</p>
+<br>
+<h2>Controller Views</h2>
+<p>Controller Views 就是一些 React 组件，这些组件监听事件的改变，然后从Stores获取应用的状态，然后通过props传递数据到子组件中。</p>
+<br>
+<p>Store Controller View</p>
+<br>
+<pre><code class='code-multiline'>var React = require('react');
+var ShoesStore = require('../stores/ShoeStore');
+
+function getAppState() {
+  return {
+    shoes: ShoeStore.getShoes();
+  };
+}
+
+var ShoeStoreApp = React.creteClass({
+  getInitialState: function() {
+    return getAppState();
+  },
+
+  componentDidMount: function() {
+    ShoeStore.addChangeListener(this._onChange);
+  },
+
+  componentWillUnmount: function() {
+    ShoesStore.removeChangeListener(this._onChange);
+  },
+
+  render: function() {
+    &lt;ShoeStore shoes={this.state.shoes}/&gt;
+  },
+
+  _onChange: function() {
+    this.setState(getAppState());
+  }
+});
+
+module.exports = ShoeStoreApp;</code></pre>
+<p><br></p>
+<p>在上面的例子中，我们使用 addChangeListener 去监听事件的改变，然后更新应用的状态当接收到事件的时候。 我们的 Stores 持有我们应用的 state, 我们使用 Stores 中的 Public 方法获取数据，然后set 应用的 state.</p>
+<br>
+<h2>放在一起</h2>
+<p>我们已经对 Flux 每一个单独的模块进行了分析了解，我们现在对于 Flux 架构如何工作有了一个更好的认识了，通过下面这幅图，也许我们可以更加清晰了。</p>
+<p>Flux 架构工作流</p>
+<br>
+<p>至此，我相信你应该可以在你下一个 React 项目中使用 Flux 架构了。</p>
+<br>
+<h2>参考文献</h2>
+<p><a href="https://scotch.io/tutorials/getting-to-know-flux-the-react-js-architecture">Getting To Know Flux, the React.js Architecture</a></p>
+        </div>
+        <script type="text/javascript">
+            (function() {
+
+    var doc_ols = document.getElementsByTagName("ol");
+
+    for ( i=0; i<doc_ols.length; i++) {
+
+        var ol_start = doc_ols[i].getAttribute("start") - 1;
+        doc_ols[i].setAttribute("style", "counter-reset:ol " + ol_start + ";");
+
+    }
+
+})();
+        </script>
+        <style>
+            html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td,article,aside,canvas,details,embed,figure,figcaption,footer,header,hgroup,menu,nav,output,ruby,section,summary,time,mark,audio,video{margin:0;padding:0;border:0;font:inherit;font-size:100%;vertical-align:baseline}html{line-height:1}ol,ul{list-style:none}table{border-collapse:collapse;border-spacing:0}caption,th,td{text-align:left;font-weight:normal;vertical-align:middle}q,blockquote{quotes:none}q:before,q:after,blockquote:before,blockquote:after{content:"";content:none}a img{border:none}article,aside,details,figcaption,figure,footer,header,hgroup,main,menu,nav,section,summary{display:block}*{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box}html{font-size:87.5%;line-height:1.57143em}html{font-size:14px;line-height:1.6em;-webkit-text-size-adjust:100%}body{background:#fcfcfc;color:#545454;text-rendering:optimizeLegibility;font-family:"AvenirNext-Regular"}a{color:#de4c4f;text-decoration:none}h1{font-family:"AvenirNext-Medium";color:#333;font-size:1.6em;line-height:1.3em;margin-bottom:.78571em}h2{font-family:"AvenirNext-Medium";color:#333;font-size:1.3em;line-height:1em;margin-bottom:.62857em}h3{font-family:"AvenirNext-Medium";color:#333;font-size:1.15em;line-height:1em;margin-bottom:.47143em}p{margin-bottom:1.57143em;hyphens:auto}hr{height:1px;border:0;background-color:#dedede;margin:-1px auto 1.57143em auto}ul,ol{margin-bottom:.31429em}ul ul,ul ol,ol ul,ol ol{margin-bottom:0px}ol li:before{content:counter(ol) ".";counter-increment:ol;color:#e06e73;text-align:right;display:inline-block;min-width:1em;margin-right:0.5em}b,strong{font-family:"AvenirNext-Bold"}i,em{font-family:"AvenirNext-Italic"}code{font-family:"Menlo-Regular"}.text-overflow-ellipsis{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sf_code_string,.sf_code_selector,.sf_code_attr-name,.sf_code_char,.sf_code_builtin,.sf_code_inserted{color:#D33905}.sf_code_comment,.sf_code_prolog,.sf_code_doctype,.sf_code_cdata{color:#838383}.sf_code_number,.sf_code_boolean{color:#0E73A2}.sf_code_keyword,.sf_code_atrule,.sf_code_rule,.sf_code_attr-value,.sf_code_function,.sf_code_class-name,.sf_code_class,.sf_code_regex,.sf_code_important,.sf_code_variable,.sf_code_interpolation{color:#0E73A2}.sf_code_property,.sf_code_tag,.sf_code_constant,.sf_code_symbol,.sf_code_deleted{color:#1B00CE}.sf_code_macro,.sf_code_entity,.sf_code_operator,.sf_code_url{color:#920448}.note-wrapper{max-width:46em;margin:0px auto;padding:1.57143em 3.14286em}.note-wrapper.spotlight-preview{overflow-x:hidden}u{text-decoration:none;background-image:linear-gradient(to bottom, rgba(0,0,0,0) 50%,#e06e73 50%);background-repeat:repeat-x;background-size:2px 2px;background-position:0 1.05em}s{color:#878787}p{margin-bottom:0.1em}hr{margin-bottom:0.7em;margin-top:0.7em}ul li{text-indent:-0.35em}ul li:before{content:"•";color:#e06e73;display:inline-block;margin-right:0.3em}ul ul{margin-left:1.25714em}ol li{text-indent:-1.45em}ol ol{margin-left:1.25714em}blockquote{display:block;margin-left:-1em;padding-left:0.8em;border-left:0.2em solid #e06e73}.todo-list ul{margin-left:1.88571em}.todo-list li{text-indent:-1.75em}.todo-list li:before{content:"";display:static;margin-right:0px}.todo-checkbox{text-indent:-1.7em}.todo-checkbox svg{margin-right:0.3em;position:relative;top:0.2em}.todo-checkbox svg #check{display:none}.todo-checkbox.todo-checked #check{display:inline}.todo-checkbox.todo-checked .todo-text{text-decoration:line-through;color:#878787}.code-inline{display:inline;background:white;border:solid 1px #dedede;padding:0.2em 0.5em;font-size:0.9em}.code-multiline{display:block;background:white;border:solid 1px #dedede;padding:0.7em 1em;font-size:0.9em;overflow-x:auto}.hashtag{display:inline-block;color:white;background:#b8bfc2;padding:0.0em 0.5em;border-radius:1em;text-indent:0}.hashtag a{color:#fff}.address a{color:#545454;background-image:linear-gradient(to bottom, rgba(0,0,0,0) 50%,#0da35e 50%);background-repeat:repeat-x;background-size:2px 2px;background-position:0 1.05em}.address svg{position:relative;top:0.2em;display:inline-block;margin-right:0.2em}.color-preview{display:inline-block;width:1em;height:1em;border:solid 1px rgba(0,0,0,0.3);border-radius:50%;margin-right:0.1em;position:relative;top:0.2em;white-space:nowrap}.color-code{margin-right:0.2em;font-family:"Menlo-Regular";font-size:0.9em}.color-hash{opacity:0.4}.ordered-list-number{color:#e06e73;text-align:right;display:inline-block;min-width:1em}.arrow svg{position:relative;top:0.08em;display:inline-block;margin-right:0.15em;margin-left:0.15em}.arrow svg #rod{stroke:#545454}.arrow svg #point{fill:#545454}mark{color:inherit;display:inline;padding:0.2em 0.5em;background-color:#fcffc0}img{max-width:100%;height:auto}
+
+        </style>
+    </body>
+</html>

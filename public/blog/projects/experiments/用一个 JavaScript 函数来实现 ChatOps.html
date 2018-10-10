@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+    <head><script src="/extra.js"></script>
+        <title>用一个 JavaScript 函数来实现 ChatOps</title>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="created" content="2018-09-01T22:00:14+0800"/>
+        <meta name="modified" content="2018-09-02T17:57:34+0800"/>
+        <meta name="tags" content=""/>
+        <meta name="last device" content="黄明和’s MacBook Pro"/>
+    </head>
+    <body>
+        <div class="note-wrapper">
+            <h1>用一个 JavaScript 函数来实现 ChatOps</h1>
+<br>
+<h2>前言</h2>
+<p>本文的目的是简单介绍一个下我自己如何借助 <a href="https://github.com/***REMOVED***/fx">fx</a>，通过一个 JavaScript 函数就可以实现一个简单的 ChatOps 方案的.</p>
+<br>
+<p>由于公司 Ops 团队人手不够，维护基础设施（jenkins，gitlab，redis，数据库等等）的稳定和持续发展已经占据了他们大部分的精力，没有更多的资源来做更好的自动化，趁着公司内部开展Hackathon，我们开发团队几个同事决定自己来做一会 DevOps 的角色，从开发团队的需求出发搭建一个完整的CI/CD自动化环境.  而我当然是选择其中最好玩的一个环节喽：ChatOps 的 Bot.</p>
+<br>
+<p>ChatOps 就不用多说了，就是 <code class='code-inline'>ChatOps = Chat + Ops</code> 嘛，就是通过 Chat 的方式来完成 Ops 相关的操作。当然业界已经有很成熟实现 ChatOps 的框架 <a href="https://github.com/hubotio/hubot">GitHub - hubotio/hubot</a> ，或者 <a href="https://github.com/howdyai/botkit">botkit</a> , 都在很多大公司广泛的使用。</p>
+<br>
+<h2>分析需求</h2>
+<p>不过我想另辟蹊径 (好吧，就是想装逼个X)，用一个函数来实现一个 ChatOps，显然它可能不是一个成熟的产品，不过是一种很好玩的思路。使用 Function as a Service 的思路来构建一个 ChatOps, 说到 Function as a Service， 当然就要使用到我自己开发的<a href="https://github.com/***REMOVED***/fx">fx</a>了 ，它可以把你写的函数(Function) 直接变成一个服务(Service), 而且 fx 几乎支持了所有的主流语言 （Golang, JavaScript/Node, Ruby, Python, Java, PHP Julia).</p>
+<br>
+<p>简单的分析 ChatOps 要做的事情: 接收即时消息工具(Slack, HipChat)发送来的消息，解析消息目的，然后调用相应的Ops工具 (Jenkins ) 完成特定的操作. 所以可以简单系统架构如下:</p>
+<br>
+<pre><code class='code-multiline'>			  message				   call API
+IM (Slack)  ----------&gt; ChatBot --------------&gt; Ops System
+            &lt;----------		   &lt;--------------
+				message					result</code></pre>
+<p><br></p>
+<p>整个过程，我们可以认为是一个无状态的处理和调用的过程，所以我们也可以用一个函数来表示这整个过程:</p>
+<pre><code class='code-multiline'>ChatBot = f(message)
+</code></pre>而这个 f (message) 就是一个简单（或者复杂）的函数，它接受从我们在即时消息发过来的消息，然后做分析转化成特定的Ops任务，去调用相应的Ops工具的 API去完成相应的工作。
+
+<h2>代码实现</h2>
+好吧，那我们就按照我们上面的分析来写这个函数就可以了。假设我们需要去实现下面的几个需求:
+
+<ol start="1"><li>能够在 Slack 中接收一个 build 的指令
+</li></ol>
+<p>根据消息传过来的project name 和 branch 去调用 Jenkins 做相应的 build.</p>
+<br>
+<ol start="2"><li>能够在 Slack 中接收一个 query 的指令
+</li></ol>
+<p>根据消息传过来的project name 和 branch 去调用 Jenkins 查询 Job 的状态.</p>
+<br>
+<p>所以我们的代码其实就非常的简单，一个函数的整体实现如下.</p>
+<br>
+<pre><code class='code-multiline'>const { exec } = require('child_process');
+
+module.exports = async (req) =&gt; {
+    const { text } = req;
+
+    // 从接收的消息中做简单的分析
+    const analyze = (text) =&gt; {
+        const [cmd, projectName, branch] = text.split(/\s+/);
+        return {
+            cmd,
+            projectName,
+            branch,
+        }
+    };
+
+    // 调用Jenkins的API做build
+    const build = (projectName, branch) =&gt; {
+        const { projectName, branch } = options;
+        const URL = `http://&lt;your jenkins server&gt;/job/${projectName}/job/${branch}/build`;
+        const cmd = `curl -X POST  ${URL} --user admin:admin`;
+        return new Promise((res, rej) =&gt; {
+            exec(`${cmd}`, (err, stdout, stderr) =&gt; {
+                if (err) {
+                    rej(err);
+                } else {
+                    res(stdout, stderr);
+                }
+            });
+        });
+    };
+
+    // 调用Jenkins的API做Job状态的查询
+    const query = (projectName, branch) =&gt; {
+        const URL = `http://&lt;your jenkins server&gt;/job/${projectName}/job/${branch}/lastBuild/api/json`;
+
+        const cmd = `curl -X POST  ${URL} --user admin:admin`;
+        return new Promise((res, rej) =&gt; {
+            exec(`${cmd}`, (err, stdout, stderr) =&gt; {
+                if (err) {
+                    rej(err);
+                } else {
+                    const ret = JSON.parse(stdout);
+                    res(ret);
+                }
+            });
+        });
+    };
+
+    const message = (msg) =&gt; {
+        const SEND_URL = "https://hooks.slack.com/services/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j";
+        const cmd = `curl -X POST --data-urlencode "payload={\\"channel\\": \\"#hack-team-1\\", \\"username\\": \\"chatops\\", \\"text\\": \\"${msg}\\"}" ${SEND_URL}`;
+        return new Promise((res, rej) =&gt; {
+            exec(`${cmd}`, (err, stdout, stderr) =&gt; {
+                if (err) {
+                    rej(err);
+                } else {
+                    res(stdout, stderr);
+                }
+            });
+        });
+    };
+
+    const { cmd, projectName, branch } = analyze(req.text);
+    if (cmd === 'build') {
+        await build(projectName, branch);
+        message(`${projectName} ${branch} build started`);
+    } else if(cmd === 'query') {
+        const res = await query(projectName, branch);
+        message(`${projectName} ${branch} built ${res.result} ${res.culprits[0].fullName}`);
+    } else {
+        message ('Command not supportet yet');
+    }
+}</code></pre>
+<p><br></p>
+<p>实现了这个函数之后，我们可以通过 <a href="https://github.com/***REMOVED***/fx">fx</a>立即部署成一个服务.</p>
+<br>
+<pre><code class='code-multiline'>fx up chatops.js
+</code></pre>如果你想我们一样使用的 Slack 的话，你需要在 Slack 的 Outgoing hook 中把你刚刚部署好的服务的 url 配置过去，然后设置相应的触发条件，我们的一个简单但是五脏俱全的 ChatBot 就算完成了.
+
+<h3>Bonus</h3>
+如果你需要一个内网穿透工具，也许 <a href="https://ngrok.com/">ngrok</a> 是你最好的选择。
+        </div>
+        <script type="text/javascript">
+            (function() {
+
+    var doc_ols = document.getElementsByTagName("ol");
+
+    for ( i=0; i<doc_ols.length; i++) {
+
+        var ol_start = doc_ols[i].getAttribute("start") - 1;
+        doc_ols[i].setAttribute("style", "counter-reset:ol " + ol_start + ";");
+
+    }
+
+})();
+        </script>
+        <style>
+            html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td,article,aside,canvas,details,embed,figure,figcaption,footer,header,hgroup,menu,nav,output,ruby,section,summary,time,mark,audio,video{margin:0;padding:0;border:0;font:inherit;font-size:100%;vertical-align:baseline}html{line-height:1}ol,ul{list-style:none}table{border-collapse:collapse;border-spacing:0}caption,th,td{text-align:left;font-weight:normal;vertical-align:middle}q,blockquote{quotes:none}q:before,q:after,blockquote:before,blockquote:after{content:"";content:none}a img{border:none}article,aside,details,figcaption,figure,footer,header,hgroup,main,menu,nav,section,summary{display:block}*{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box}html{font-size:87.5%;line-height:1.57143em}html{font-size:14px;line-height:1.6em;-webkit-text-size-adjust:100%}body{background:#fcfcfc;color:#545454;text-rendering:optimizeLegibility;font-family:"AvenirNext-Regular"}a{color:#de4c4f;text-decoration:none}h1{font-family:"AvenirNext-Medium";color:#333;font-size:1.6em;line-height:1.3em;margin-bottom:.78571em}h2{font-family:"AvenirNext-Medium";color:#333;font-size:1.3em;line-height:1em;margin-bottom:.62857em}h3{font-family:"AvenirNext-Medium";color:#333;font-size:1.15em;line-height:1em;margin-bottom:.47143em}p{margin-bottom:1.57143em;hyphens:auto}hr{height:1px;border:0;background-color:#dedede;margin:-1px auto 1.57143em auto}ul,ol{margin-bottom:.31429em}ul ul,ul ol,ol ul,ol ol{margin-bottom:0px}ol li:before{content:counter(ol) ".";counter-increment:ol;color:#e06e73;text-align:right;display:inline-block;min-width:1em;margin-right:0.5em}b,strong{font-family:"AvenirNext-Bold"}i,em{font-family:"AvenirNext-Italic"}code{font-family:"Menlo-Regular"}.text-overflow-ellipsis{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sf_code_string,.sf_code_selector,.sf_code_attr-name,.sf_code_char,.sf_code_builtin,.sf_code_inserted{color:#D33905}.sf_code_comment,.sf_code_prolog,.sf_code_doctype,.sf_code_cdata{color:#838383}.sf_code_number,.sf_code_boolean{color:#0E73A2}.sf_code_keyword,.sf_code_atrule,.sf_code_rule,.sf_code_attr-value,.sf_code_function,.sf_code_class-name,.sf_code_class,.sf_code_regex,.sf_code_important,.sf_code_variable,.sf_code_interpolation{color:#0E73A2}.sf_code_property,.sf_code_tag,.sf_code_constant,.sf_code_symbol,.sf_code_deleted{color:#1B00CE}.sf_code_macro,.sf_code_entity,.sf_code_operator,.sf_code_url{color:#920448}.note-wrapper{max-width:46em;margin:0px auto;padding:1.57143em 3.14286em}.note-wrapper.spotlight-preview{overflow-x:hidden}u{text-decoration:none;background-image:linear-gradient(to bottom, rgba(0,0,0,0) 50%,#e06e73 50%);background-repeat:repeat-x;background-size:2px 2px;background-position:0 1.05em}s{color:#878787}p{margin-bottom:0.1em}hr{margin-bottom:0.7em;margin-top:0.7em}ul li{text-indent:-0.35em}ul li:before{content:"•";color:#e06e73;display:inline-block;margin-right:0.3em}ul ul{margin-left:1.25714em}ol li{text-indent:-1.45em}ol ol{margin-left:1.25714em}blockquote{display:block;margin-left:-1em;padding-left:0.8em;border-left:0.2em solid #e06e73}.todo-list ul{margin-left:1.88571em}.todo-list li{text-indent:-1.75em}.todo-list li:before{content:"";display:static;margin-right:0px}.todo-checkbox{text-indent:-1.7em}.todo-checkbox svg{margin-right:0.3em;position:relative;top:0.2em}.todo-checkbox svg #check{display:none}.todo-checkbox.todo-checked #check{display:inline}.todo-checkbox.todo-checked .todo-text{text-decoration:line-through;color:#878787}.code-inline{display:inline;background:white;border:solid 1px #dedede;padding:0.2em 0.5em;font-size:0.9em}.code-multiline{display:block;background:white;border:solid 1px #dedede;padding:0.7em 1em;font-size:0.9em;overflow-x:auto}.hashtag{display:inline-block;color:white;background:#b8bfc2;padding:0.0em 0.5em;border-radius:1em;text-indent:0}.hashtag a{color:#fff}.address a{color:#545454;background-image:linear-gradient(to bottom, rgba(0,0,0,0) 50%,#0da35e 50%);background-repeat:repeat-x;background-size:2px 2px;background-position:0 1.05em}.address svg{position:relative;top:0.2em;display:inline-block;margin-right:0.2em}.color-preview{display:inline-block;width:1em;height:1em;border:solid 1px rgba(0,0,0,0.3);border-radius:50%;margin-right:0.1em;position:relative;top:0.2em;white-space:nowrap}.color-code{margin-right:0.2em;font-family:"Menlo-Regular";font-size:0.9em}.color-hash{opacity:0.4}.ordered-list-number{color:#e06e73;text-align:right;display:inline-block;min-width:1em}.arrow svg{position:relative;top:0.08em;display:inline-block;margin-right:0.15em;margin-left:0.15em}.arrow svg #rod{stroke:#545454}.arrow svg #point{fill:#545454}mark{color:inherit;display:inline;padding:0.2em 0.5em;background-color:#fcffc0}img{max-width:100%;height:auto}
+
+        </style>
+    </body>
+</html>

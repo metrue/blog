@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+    <head><script src="/extra.js"></script>
+        <title>2017年终总结</title>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="created" content="2018-09-01T22:00:14+0800"/>
+        <meta name="modified" content="2018-09-02T18:00:13+0800"/>
+        <meta name="tags" content=""/>
+        <meta name="last device" content="黄明和’s MacBook Pro"/>
+    </head>
+    <body>
+        <div class="note-wrapper">
+            <h1>2017年终总结</h1>
+<br>
+<p>2017 是很忙碌的一年，离开很自由的 Splunk，来到了现在的 <a href="https://shejijia.com">设计家</a>团队，换了团队，换了行业，也换工作方式，很多地方需要适应，不管怎样，每一个新的开始都是一个挑战。所以我还是怀着愉快的心情来写这篇年终总结吧.</p>
+<br>
+<h3>工作</h3>
+<p>也许全屋定制团队是整个居然设计家上海最忙碌的 Scrum Team 吧，查看打卡就知道我们的成员有多少次都是工作到最晚的。虽然没有强制性的 996, 但是平均下来我们相对 996 过犹不及。</p>
+<br>
+<ul><li>重构 3D 工具
+</li></ul>
+<br>
+<p>3D 工具作为一个拥有复杂功能，而且历史长久的项目，它拥有这超过 25w 的 JavaScript 代码，无数的 CSS 文件，无数的各类资源文件。而且各种管理风格千差万别。 JavaScript 部分: 既有基于 Google Closure 构建方式的代码，又有 jQuery 风格的大量操作 DOM 的代码，还有很多 ES3/ES5 的代码，还有今年来才引入的 ES6/ES7 风格的代码，还有无穷的原生的 JavaScript 代码。而在 CSS 方面，有原生 CSS 写法，也有 Less/Saas。</p>
+<p>而在代码架构方面，3D Tools 实际的架构是这样的:</p>
+<pre><code class='code-multiline'>App = App Core + Plugins
+
+App Core = (App Transaction Management) + App Data Model + App       Views
+</code></pre>为了更好支撑未来更复杂的需求，更快的开发效率，我们对这个代码库进行调整，细节可以在我的这篇文章 <a href="https://minghe.me/2017-08-14-%E8%AE%B0%E4%B8%80%E6%AC%A1%E5%A4%A7%E8%A7%84%E6%A8%A1%E9%87%8D%E6%9E%84.html">2017-08-14-记一次大规模重构</a> 了解到，当时真是初生牛犊不怕虎啊，刚到公司不到一个月，才敢对多年历史的复杂项目大刀阔斧的改造。虽然期间又一些问题，不过对于我个人而言，这样的经验无疑是珍贵的，在很短的时间就了解到整个产品的各方各面，对于我如今的开发都是非常有帮助的。
+
+<ul><li>橱柜定制从 3D 工具应用独立出来
+</li></ul>
+<br>
+<p>橱柜定制作为整个全屋定制项目的排头兵，为了适应以后的快速迭代，我们把橱柜定制从原来作为 3D 工具的一个 plugin 独立出来成为了一个独立的应用，独立的 CodeBase, 独立的 CI/CD。 这个过程充满的艰辛和刺激，估计只有我和 Jerry 知道吧。 从以前作为一个依赖于 3D 工具的 plugin, 如何能够以最小的依赖，而且非功能退化的独立出来成为一个专用应用，这是不小的挑战，但是我们做到了。</p>
+<br>
+<ul><li>我们从 0 开始搭建整个 3D 定制的参数化引擎
+</li></ul>
+<br>
+<p>任何的引擎都可以这么表征</p>
+<pre><code class='code-multiline'>engine = f(input, rules)
+</code></pre>不同使用场景 (Domains) 的引擎会有不同的引擎规则 (Rules)，而对于家装设计领域，我们的 Rules 来源是各个家装设计公司和生产厂商。如果在这个特殊的领域需求里面抽象出更加适合工程实现的引擎模式成为我们的最头痛的事情，好在团队中的老司机在 Autodesk 已经塌坑无数，在短短的两个月时间里，我们做好了整个参数化引擎，并且在橱柜定制 App 中成功使用，为即将开始的全屋定制打下坚实的基础。
+
+<ul><li>内部 Hackathon 二等奖
+</li></ul>
+<br>
+<p>到了<a href="https://shejijia.com">设计家团队</a>之后就一直想在公司内部搞一场 Hackathon，所以当同事和我说他也想搞的时候，我们就一拍即合，和公司申请了经费，而且老板也支持。虽然其中有一些意外，但是整体还是成功的，而且老板也把 Hackathon 变成了每年两次的常规活动。更值得一提的是我们团队的作品: 小居 - 家装设计语音助理, 也很荣幸的获得二等奖，很是意外。语音交互也许是未来的一个很重要的交互入口，所以一早就有给我们公司的产品条件语音交互功能的想法，所以索性就在这次 Hackathon 实践一下，所以离我哪行中想要达到的样子还差的很远，但是基本的流程已经成型，而且玩了简单的交互。也算是一次成功的尝试吧。</p>
+<br>
+<h3>开源项目</h3>
+<br>
+<br>
+<ul><li><a href="https://github.com/***REMOVED***/fx">fx</a>
+</li></ul>
+<br>
+<p>在 <a href="http://gohack2017.golangfoundation.org/">GoHack2017黑客马拉松</a> 虽然没有获奖，但是在那场比赛中完成的 <a href="https://github/com/***REMOVED***/fx">fx</a> 成为我去年的小小高光时刻： 在 <a href="https://news.ycombinator.com/item?id=15686661">Show HN: Fx - Poor man's serverless framework</a>发布了之后，迅速串升到Github Go Trend 榜单的第一名，并且持续在榜单首页超过一个星期，Stars 数目如今也吵过 1k,  当然更值得纪念的是，我和 <a href="https://github.com/tj">@TJ</a> 大神终于有同框了，哈哈。</p>
+<br>
+<br>
+<ul><li><a href="https://github.com/***REMOVED***/YoYo">YoYo</a>
+</li></ul>
+<br>
+<p>而 YoYo 则是一个自己的一个需求：想要一个很干净纯洁的博客留言系统，不要有各种乱七八糟的社交按钮或者广告，所以我就着手自己写一个系统，留下 email 和你想说的话就可以留言，一个纯 JavaScript 的项目，可以在这篇文章<a href="https://minghe.me/2017-04-18-YoYo:%E8%87%AA%E5%B7%B1%E6%89%93%E9%80%A0%E4%B8%80%E4%B8%AA%E8%AF%84%E8%AE%BA%E6%9C%8D%E5%8A%A1.html">2017-04-18-YoYo:自己打造一个评论服务</a>详细了解。</p>
+<br>
+<ul><li><a href="https://singular.fm/">Singular.Fm</a>
+</li></ul>
+<br>
+<p>是的，我参与的 podcast 终于上线了，很早之前就想要做一档 podcast， 但是一直没有狠下心来实施，后来和 <a href="https://weibo.com/titantse?refer_flag=1005050005_">@梯田</a> 闲聊，正好他也有兴趣，所以一拍即合，说干就干，我们在年前终于录制了一期。希望可以持续做下去。</p>
+<br>
+<ul><li><a href="https://mpapp.tk/">MindPalace</a>
+</li></ul>
+<br>
+<p><a href="https://twitter.com/haojianzong?lang=en">@Jakehao</a>  从深圳来上海玩，下飞机之后突然说有一个idea，稀里哗啦的和我说一通，我没有听太明白，索性就花了一张图给我看，然后我明白了，这就是一个关于人的日志记录工具啊，Splunk 是记录机器日志的，要是有一个app可以让记录人的日志(心思)变得容易，而且随时可以检索，那么一定棒极了，所以当即就决定和他一起做这个app. 然后我们两个都好忙，发布了第一个 Test Flight 了之后，我们还没有太多的时间的高强度的继续开发。只能周末的时候一起搞搞。</p>
+<br>
+<h3>后记</h3>
+<p>做工程师最好玩的地方在于，我们随心所欲的创造，一台电脑，一杯咖啡，一个好玩的创意，就可以让我们在一个地方默默的写几天代码，因为这就是我们的世界，简单而自由的世界。</p>
+        </div>
+        <script type="text/javascript">
+            (function() {
+
+    var doc_ols = document.getElementsByTagName("ol");
+
+    for ( i=0; i<doc_ols.length; i++) {
+
+        var ol_start = doc_ols[i].getAttribute("start") - 1;
+        doc_ols[i].setAttribute("style", "counter-reset:ol " + ol_start + ";");
+
+    }
+
+})();
+        </script>
+        <style>
+            html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td,article,aside,canvas,details,embed,figure,figcaption,footer,header,hgroup,menu,nav,output,ruby,section,summary,time,mark,audio,video{margin:0;padding:0;border:0;font:inherit;font-size:100%;vertical-align:baseline}html{line-height:1}ol,ul{list-style:none}table{border-collapse:collapse;border-spacing:0}caption,th,td{text-align:left;font-weight:normal;vertical-align:middle}q,blockquote{quotes:none}q:before,q:after,blockquote:before,blockquote:after{content:"";content:none}a img{border:none}article,aside,details,figcaption,figure,footer,header,hgroup,main,menu,nav,section,summary{display:block}*{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box}html{font-size:87.5%;line-height:1.57143em}html{font-size:14px;line-height:1.6em;-webkit-text-size-adjust:100%}body{background:#fcfcfc;color:#545454;text-rendering:optimizeLegibility;font-family:"AvenirNext-Regular"}a{color:#de4c4f;text-decoration:none}h1{font-family:"AvenirNext-Medium";color:#333;font-size:1.6em;line-height:1.3em;margin-bottom:.78571em}h2{font-family:"AvenirNext-Medium";color:#333;font-size:1.3em;line-height:1em;margin-bottom:.62857em}h3{font-family:"AvenirNext-Medium";color:#333;font-size:1.15em;line-height:1em;margin-bottom:.47143em}p{margin-bottom:1.57143em;hyphens:auto}hr{height:1px;border:0;background-color:#dedede;margin:-1px auto 1.57143em auto}ul,ol{margin-bottom:.31429em}ul ul,ul ol,ol ul,ol ol{margin-bottom:0px}ol li:before{content:counter(ol) ".";counter-increment:ol;color:#e06e73;text-align:right;display:inline-block;min-width:1em;margin-right:0.5em}b,strong{font-family:"AvenirNext-Bold"}i,em{font-family:"AvenirNext-Italic"}code{font-family:"Menlo-Regular"}.text-overflow-ellipsis{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sf_code_string,.sf_code_selector,.sf_code_attr-name,.sf_code_char,.sf_code_builtin,.sf_code_inserted{color:#D33905}.sf_code_comment,.sf_code_prolog,.sf_code_doctype,.sf_code_cdata{color:#838383}.sf_code_number,.sf_code_boolean{color:#0E73A2}.sf_code_keyword,.sf_code_atrule,.sf_code_rule,.sf_code_attr-value,.sf_code_function,.sf_code_class-name,.sf_code_class,.sf_code_regex,.sf_code_important,.sf_code_variable,.sf_code_interpolation{color:#0E73A2}.sf_code_property,.sf_code_tag,.sf_code_constant,.sf_code_symbol,.sf_code_deleted{color:#1B00CE}.sf_code_macro,.sf_code_entity,.sf_code_operator,.sf_code_url{color:#920448}.note-wrapper{max-width:46em;margin:0px auto;padding:1.57143em 3.14286em}.note-wrapper.spotlight-preview{overflow-x:hidden}u{text-decoration:none;background-image:linear-gradient(to bottom, rgba(0,0,0,0) 50%,#e06e73 50%);background-repeat:repeat-x;background-size:2px 2px;background-position:0 1.05em}s{color:#878787}p{margin-bottom:0.1em}hr{margin-bottom:0.7em;margin-top:0.7em}ul li{text-indent:-0.35em}ul li:before{content:"•";color:#e06e73;display:inline-block;margin-right:0.3em}ul ul{margin-left:1.25714em}ol li{text-indent:-1.45em}ol ol{margin-left:1.25714em}blockquote{display:block;margin-left:-1em;padding-left:0.8em;border-left:0.2em solid #e06e73}.todo-list ul{margin-left:1.88571em}.todo-list li{text-indent:-1.75em}.todo-list li:before{content:"";display:static;margin-right:0px}.todo-checkbox{text-indent:-1.7em}.todo-checkbox svg{margin-right:0.3em;position:relative;top:0.2em}.todo-checkbox svg #check{display:none}.todo-checkbox.todo-checked #check{display:inline}.todo-checkbox.todo-checked .todo-text{text-decoration:line-through;color:#878787}.code-inline{display:inline;background:white;border:solid 1px #dedede;padding:0.2em 0.5em;font-size:0.9em}.code-multiline{display:block;background:white;border:solid 1px #dedede;padding:0.7em 1em;font-size:0.9em;overflow-x:auto}.hashtag{display:inline-block;color:white;background:#b8bfc2;padding:0.0em 0.5em;border-radius:1em;text-indent:0}.hashtag a{color:#fff}.address a{color:#545454;background-image:linear-gradient(to bottom, rgba(0,0,0,0) 50%,#0da35e 50%);background-repeat:repeat-x;background-size:2px 2px;background-position:0 1.05em}.address svg{position:relative;top:0.2em;display:inline-block;margin-right:0.2em}.color-preview{display:inline-block;width:1em;height:1em;border:solid 1px rgba(0,0,0,0.3);border-radius:50%;margin-right:0.1em;position:relative;top:0.2em;white-space:nowrap}.color-code{margin-right:0.2em;font-family:"Menlo-Regular";font-size:0.9em}.color-hash{opacity:0.4}.ordered-list-number{color:#e06e73;text-align:right;display:inline-block;min-width:1em}.arrow svg{position:relative;top:0.08em;display:inline-block;margin-right:0.15em;margin-left:0.15em}.arrow svg #rod{stroke:#545454}.arrow svg #point{fill:#545454}mark{color:inherit;display:inline;padding:0.2em 0.5em;background-color:#fcffc0}img{max-width:100%;height:auto}
+
+        </style>
+    </body>
+</html>

@@ -13,6 +13,8 @@ window.onload = () => {
     });
 
     document.body.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"';
+    document.body.style.color = '#545454';
+    document.body.style.fontWeight = 300;
     document.body.style.fontSize = '16px';
   }
 

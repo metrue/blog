@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html>
-    <head><script src="/extra.js"></script>
+    <head>
         <title>Go 开发小记之 AES 加密</title>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="created" content="2018-09-03T00:55:37+0800"/>
-        <meta name="modified" content="2018-09-03T00:56:08+0800"/>
+        <meta name="modified" content="2018-10-10T09:52:59+0800"/>
         <meta name="tags" content=""/>
-        <meta name="last device" content="黄明和’s MacBook Pro"/>
+        <meta name="last device" content="minghe"/>
     </head>
     <body>
         <div class="note-wrapper">
@@ -17,17 +17,14 @@
 <p>AES 是 Advanced Encryption Standard 是缩写，是一种对称式的加密算法。AES 的区块 block 长度是固定的 128 位:</p>
 <br>
 <pre><code class='code-multiline'>// The AES block size in bytes.
-const BlockSize = 16
-</code></pre>上面这段代码是在 <a href="https://github.com/golang/go/blob/master/src/crypto/aes/cipher.go#L15">Golang 的源代码中</a>, <code class='code-inline'>16 * 8 = 128</code>
-
-而密钥 key 的长度可以是 128, 192 和 256. 所以你也可以在 Golang 的<a href="https://github.com/golang/go/blob/master/src/crypto/aes/cipher.go#L33">相关代码中</a>看到相关的定义。这也就是我们为什么经常看到 AES-128, AES-192, 以及 AES-256 原因，后缀的数字128, 192, 256 指的就是 key 的长度.
-
-
-AES 有如下几种模式:
-
+const BlockSize = 16</code></pre>
+<p><br></p>
+<p>上面这段代码是在 <a href="https://github.com/golang/go/blob/master/src/crypto/aes/cipher.go#L15">Golang 的源代码中</a>, <code class='code-inline'>16 * 8 = 128</code>, 而密钥 key 的长度可以是 128, 192 和 256. 所以你也可以在 Golang 的<a href="https://github.com/golang/go/blob/master/src/crypto/aes/cipher.go#L33">相关代码中</a>看到相关的定义。这也就是我们为什么经常看到 AES-128, AES-192, 以及 AES-256 原因，后缀的数字128, 192, 256 指的就是 key 的长度. AES 有如下几种模式:</p>
+<br>
 <blockquote>
-需要填充的模式
+<p>需要填充的模式</p>
 </blockquote>
+<br>
 <ul><li>Electronic Codebook (ECB): 带加密的信息被分割成 blocks，然后 blocks 分别被单独加密. 这种模式的缺点是缺乏混淆性, 因为相同的 Plain Text block 会被加密成相同的 Cipher Text block. 所以数据模式的隐藏性很低。在大部分的加密场景都不推荐使用。
 </li><li>Cipher Block Chaining (CBC): CBC 在对信息进行加密的时候，Initial Value (IV) 需要随机的产生. 改信息的任何一部分都需要重新进行整个加密. 解密可以并行的进行.
 </li></ul>

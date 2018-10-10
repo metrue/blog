@@ -2,7 +2,6 @@
   "name": "blog",
   "version": "0.0.1",
   "description": "A tool to publish Bear's blog posts",
-  "bin": "./bin/cici.js",
   "scripts": {
     "build": "node bin/build.js"
   },
@@ -31,8 +30,7 @@
   "homepage": "https://github.com/metrue/blog",
   "dependencies": {
     "ejs": "^2.5.5",
-    "fs-extra": "^7.0.0",
-    "randomcolor": "^0.5.3"
+    "fs-extra": "^7.0.0"
   },
   "devDependencies": {
     "html-inject-script": "^2.0.0"

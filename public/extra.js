@@ -12,6 +12,13 @@ window.onload = () => {
       item.style.lineHeight = 1.58;
     });
 
+    eles = document.getElementsByTagName('h2');
+    Object.values(eles).forEach((item) => {
+      item.style.padding = '20px 0 10px 0';
+      item.style.fontWeight = '300';
+      item.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"';
+    });
+
     document.body.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"';
     document.body.style.color = '#545454';
     document.body.style.fontWeight = 300;

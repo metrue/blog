@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>小程序跳坑指南</title>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="created" content="2018-11-21T17:26:26+0800"/>
+        <meta name="modified" content="2018-11-28T18:00:40+0800"/>
+        <meta name="tags" content=""/>
+        <meta name="last device" content="minghe"/>
+    </head>
+    <body>
+        <div class="note-wrapper">
+            <h1>小程序跳坑指南</h1>
+<br>
+<h2>开发</h2>
+<p>小程序的开发对于大部分的开发者还是相对简单的，如果有一点前端的开发经验，可以很快的开发出一个简单的小程序应用.</p>
+<br>
+<h3>框架</h3>
+<br>
+<p>我在 <a href="https://minghe.me/moodz/">Moodz</a>项目中没有使用任何框架, 而我们的 Udacity 官方小程序使用的, 市面上有不少针对微信小程序的开发框架架，他们主要解决两个问题：</p>
+<br>
+<ol start="1"><li>开发体验和多端代码共用.
+</li><li>开发者希望可以像开发 React  或者 Vue 的项目一样开发小程序.
+</li></ol>
+<br>
+<p>我个人是更倾向于不依赖框架来进行小程序的开发的，一方面是 <a href="https://minghe.me/moodz/">Moods</a> 是一个功能较为简单的项目，UI 上没有不需要特别复杂的组件结构，数据上也不太需要太复杂的状态管理，所以使用原生框架就够了。使用第三方框架，一方面是需要额外的时间去熟悉他们的文档，开发模式等，而且也担心他们能否保持更新，同步小程序的接口更新等问题。</p>
+<br>
+<h3>后端</h3>
+<p><a href="https://minghe.me/moodz/">Moodz</a> 完全使用微信提供的小程序云开发能力来进行 API 的开发。用到小程序的云函数在进行计算功能，用小程序的云数据库来进行数据存储功能。</p>
+<br>
+<ul><li>云函数
+</li></ul>
+<p>小程序的云函数和我们常用的 AWS 的 lambda 区别差不多，就是定于一个函数，然后在小程序中直接调用该函数。而通过 <code class='code-inline'>wx-server-sdk</code>我们又可以在云函数内部去调用云数据库和云存储服务。</p>
+<br>
+<pre><code class='code-multiline'>const cloud = require('wx-server-sdk')
+cloud.init()
+const db = cloud.database()
+exports.main = async (event, context) =&gt; {
+  return db.collection('todos').get()
+}</code></pre>
+<p><br></p>
+<p>当然还有一个更有用的功能，那就是使用云函数来获取用户相关信息: OPENID, APPID, UNIONID. </p>
+<br>
+<pre><code class='code-multiline'>const cloud = require('wx-server-sdk')
+exports.main = (event, context) =&gt; {
+  const { OPENID, APPID, UNIONID } = cloud.getWXContext() 
+
+  return {
+    OPENID,
+    APPID,
+    UNIONID,
+  }
+}</code></pre>
+<p><br></p>
+<ul><li>云数据库
+</li></ul>
+<p>云数据库和 MongoDB 非常的像，API 也很简单，通过它的 <code class='code-inline'>command</code>也可以实现较为复杂的查询。当然如果你发现自己需要很复杂的查询语句的时候，也到了该重构你业务逻辑的时候了。</p>
+<br>
+<ul><li>云存储
+</li></ul>
+<p>云存储的 API 很简单，使用起来也很方便. 而且还有临时链接的功能，只提供了下面四个 API:</p>
+<br>
+<pre><code class='code-multiline'>uploadFile	上传文件
+downloadFile	下载文件
+deleteFile	删除文件
+getTempFileURL	换取临时链接
+</code></pre>所以想实现复杂的业务逻辑，需要更多的业务代码来支持。
+
+<h2>测试</h2>
+<blockquote>
+工具 Jest 
+</blockquote>
+
+测试小程序和我们平常的前端应用有一些区别, 比如测试 React 应用，我们可以使用 Enzyme, 它提供的 <code class='code-inline'>shadow</code>, <code class='code-inline'>mount</code> 以及 <code class='code-inline'>render</code> 可以大大减轻我们的测试劳动力。而对于小程序来说，我们程序的代码逻辑主要运行在 <code class='code-inline'>App</code>, <code class='code-inline'>Page</code> 这两种小程序全局的作用域中，所以测试的第一步就是如何 mock <code class='code-inline'>App</code> 和 <code class='code-inline'>Page</code>.  
+
+和其他使用 Jest 作为测试工具的项目一样, 我们习惯在 <code class='code-inline'>setupFiles</code>文件中进行 <code class='code-inline'>global</code> 对象的构造. 所以你需要在你的 <code class='code-inline'>jest.config.json</code> 中添加下面一行:
+
+<pre><code class='code-multiline'>"setupFiles": ["&lt;rootDir&gt;/test/jest.setup.js"]</code></pre>
+<br>
+然后在 <code class='code-inline'>jest.setup.js</code> 中进行 <code class='code-inline'>wx</code>, <code class='code-inline'>App</code>, <code class='code-inline'>Page</code> 等微信小程序相关的对象和函数进行 <code class='code-inline'>mock</code>.   所以只要:
+
+<pre><code class='code-multiline'>global.wx = {
+	cloud: {
+		init: jest.fn(),
+	},
+	....
+}</code></pre>
+<p><br></p>
+<p>可以往 <code class='code-inline'>global.wx</code> 塞进去任何我们希望 <code class='code-inline'>wx</code>拥有的属性, 当然其实我们主要是为了 <code class='code-inline'>mock</code> 小程序中 <code class='code-inline'>wx</code>这种对象的行为。同理，对于 <code class='code-inline'>App</code> 和 <code class='code-inline'>Page</code> 也一样, 不过他们特殊的是，<code class='code-inline'>App</code> 和  <code class='code-inline'>Page</code> 是 <code class='code-inline'>function</code>， 这两个函数的输入是: 初始数据，页面或者<code class='code-inline'>App</code>的生命周期函数，还是就是我们的各种代码逻辑了。</p>
+<br>
+<pre><code class='code-multiline'>const noop = () =&gt; {};
+const isFn = fn =&gt; typeof fn === 'function';
+
+let wId = 0;
+global.Page = ({ data, ...rest }) =&gt; {
+  const page = {
+    data,
+    setData: jest.fn(function (newData, cb) {
+      this.data = {
+        ...this.data,
+        ...newData,
+      };
+
+      if (isFn(cb)) cb();
+    }),
+    onLoad: noop,
+    onReady: noop,
+    onUnLoad: noop,
+    __wxWebviewId__: wId++,
+    ...rest,
+  };
+  global.wxPageInstance = page;
+  return page;
+};</code></pre>
+<p><br></p>
+<p>而对于 <code class='code-inline'>App</code> 我不只是要 <code class='code-inline'>mock</code> 它本身，如果你在函数中使用到 <code class='code-inline'>getApp</code> 这个全局函数，也需要根据实际情况 <code class='code-inline'>mock</code>出来,  比如:</p>
+<br>
+<pre><code class='code-multiline'>global.App = ({ ...rest }) =&gt; {
+  const app = {
+    onLaunch: noop,
+    ...rest,
+  };
+  global.wxApp = app;
+  return app;
+};
+
+global.getApp = () =&gt; ({
+  track: jest.fn(),
+  toast: jest.fn(),
+});</code></pre>
+<p><br></p>
+<h2>监控</h2>
+<p>如果完全使用小程序的云开发组件 (云函数，云数据，云存储) 来作为小程序的后端，那么监控就不太需要我们操心了，因为小程序后台已经有不错的<a href="https://developers.weixin.qq.com/miniprogram/dev/wxcloud/guide/functions/console.html">日志监控能力</a></p>
+<br>
+<p>在一般的网站前端，我们可以选择 <a href="https://sentry.io/welcome/">Sentry</a> , <a href="https://airbrake.io/">Airbrake</a> 等 Error trace 服务。而小程序的前端监控方面，目前没有发现特别好的方案. 一般我们会这么做, 在 <code class='code-inline'>App</code> 的 <code class='code-inline'>onError</code>中去上报错误信息. 具体是在我们的 <code class='code-inline'>App.js</code>中加入:</p>
+<br>
+<pre><code class='code-multiline'> onError(msg) {
+    wx.reportAnalytics('onerror', { ctx: msg });
+  },</code></pre>
+<p><br></p>
+<p>不过我们需要在我们的小程序后台进行事件的配置，可以参考<a href="https://developers.weixin.qq.com/miniprogram/analysis/custom/">这里</a> .</p>
+<br>
+<h2>宣传</h2>
+<p>嗯，顺便宣传一下我热乎乎开发的小程序 <a href="https://minghe.me/moodz">Moods</a>, 打开微信扫码适用一下吧。</p>
+<p><img src="https://s3-ap-northeast-1.amazonaws.com/moodz/moodz.png" alt="图片" title=""></p>
+        </div>
+        <script type="text/javascript">
+            (function() {
+
+    var doc_ols = document.getElementsByTagName("ol");
+
+    for ( i=0; i<doc_ols.length; i++) {
+
+        var ol_start = doc_ols[i].getAttribute("start") - 1;
+        doc_ols[i].setAttribute("style", "counter-reset:ol " + ol_start + ";");
+
+    }
+
+})();
+        </script>
+        <style>
+            html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td,article,aside,canvas,details,embed,figure,figcaption,footer,header,hgroup,menu,nav,output,ruby,section,summary,time,mark,audio,video{margin:0;padding:0;border:0;font:inherit;font-size:100%;vertical-align:baseline}html{line-height:1}ol,ul{list-style:none}table{border-collapse:collapse;border-spacing:0}caption,th,td{text-align:left;font-weight:normal;vertical-align:middle}q,blockquote{quotes:none}q:before,q:after,blockquote:before,blockquote:after{content:"";content:none}a img{border:none}article,aside,details,figcaption,figure,footer,header,hgroup,main,menu,nav,section,summary{display:block}*{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box}html{font-size:87.5%;line-height:1.57143em}html{font-size:14px;line-height:1.6em;-webkit-text-size-adjust:100%}body{background:#fcfcfc;color:#545454;text-rendering:optimizeLegibility;font-family:"AvenirNext-Regular"}a{color:#de4c4f;text-decoration:none}h1{font-family:"AvenirNext-Medium";color:#333;font-size:1.6em;line-height:1.3em;margin-bottom:.78571em}h2{font-family:"AvenirNext-Medium";color:#333;font-size:1.3em;line-height:1em;margin-bottom:.62857em}h3{font-family:"AvenirNext-Medium";color:#333;font-size:1.15em;line-height:1em;margin-bottom:.47143em}p{margin-bottom:1.57143em;hyphens:auto}hr{height:1px;border:0;background-color:#dedede;margin:-1px auto 1.57143em auto}ul,ol{margin-bottom:.31429em}ul ul,ul ol,ol ul,ol ol{margin-bottom:0px}ol li:before{content:counter(ol) ".";counter-increment:ol;color:#e06e73;text-align:right;display:inline-block;min-width:1em;margin-right:0.5em}b,strong{font-family:"AvenirNext-Bold"}i,em{font-family:"AvenirNext-Italic"}code{font-family:"Menlo-Regular"}.text-overflow-ellipsis{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sf_code_string,.sf_code_selector,.sf_code_attr-name,.sf_code_char,.sf_code_builtin,.sf_code_inserted{color:#D33905}.sf_code_comment,.sf_code_prolog,.sf_code_doctype,.sf_code_cdata{color:#838383}.sf_code_number,.sf_code_boolean{color:#0E73A2}.sf_code_keyword,.sf_code_atrule,.sf_code_rule,.sf_code_attr-value,.sf_code_function,.sf_code_class-name,.sf_code_class,.sf_code_regex,.sf_code_important,.sf_code_variable,.sf_code_interpolation{color:#0E73A2}.sf_code_property,.sf_code_tag,.sf_code_constant,.sf_code_symbol,.sf_code_deleted{color:#1B00CE}.sf_code_macro,.sf_code_entity,.sf_code_operator,.sf_code_url{color:#920448}.note-wrapper{max-width:46em;margin:0px auto;padding:1.57143em 3.14286em}.note-wrapper.spotlight-preview{overflow-x:hidden}u{text-decoration:none;background-image:linear-gradient(to bottom, rgba(0,0,0,0) 50%,#e06e73 50%);background-repeat:repeat-x;background-size:2px 2px;background-position:0 1.05em}s{color:#878787}p{margin-bottom:0.1em}hr{margin-bottom:0.7em;margin-top:0.7em}ul li{text-indent:-0.35em}ul li:before{content:"•";color:#e06e73;display:inline-block;margin-right:0.3em}ul ul{margin-left:1.25714em}ol li{text-indent:-1.45em}ol ol{margin-left:1.25714em}blockquote{display:block;margin-left:-1em;padding-left:0.8em;border-left:0.2em solid #e06e73}.todo-list ul{margin-left:1.88571em}.todo-list li{text-indent:-1.75em}.todo-list li:before{content:"";display:static;margin-right:0px}.todo-checkbox{text-indent:-1.7em}.todo-checkbox svg{margin-right:0.3em;position:relative;top:0.2em}.todo-checkbox svg #check{display:none}.todo-checkbox.todo-checked #check{display:inline}.todo-checkbox.todo-checked .todo-text{text-decoration:line-through;color:#878787}.code-inline{display:inline;background:white;border:solid 1px #dedede;padding:0.2em 0.5em;font-size:0.9em}.code-multiline{display:block;background:white;border:solid 1px #dedede;padding:0.7em 1em;font-size:0.9em;overflow-x:auto}.hashtag{display:inline-block;color:white;background:#b8bfc2;padding:0.0em 0.5em;border-radius:1em;text-indent:0}.hashtag a{color:#fff}.address a{color:#545454;background-image:linear-gradient(to bottom, rgba(0,0,0,0) 50%,#0da35e 50%);background-repeat:repeat-x;background-size:2px 2px;background-position:0 1.05em}.address svg{position:relative;top:0.2em;display:inline-block;margin-right:0.2em}.color-preview{display:inline-block;width:1em;height:1em;border:solid 1px rgba(0,0,0,0.3);border-radius:50%;margin-right:0.1em;position:relative;top:0.2em;white-space:nowrap}.color-code{margin-right:0.2em;font-family:"Menlo-Regular";font-size:0.9em}.color-hash{opacity:0.4}.ordered-list-number{color:#e06e73;text-align:right;display:inline-block;min-width:1em}.arrow svg{position:relative;top:0.08em;display:inline-block;margin-right:0.15em;margin-left:0.15em}.arrow svg #rod{stroke:#545454}.arrow svg #point{fill:#545454}mark{color:inherit;display:inline;padding:0.2em 0.5em;background-color:#fcffc0}img{max-width:100%;height:auto}
+
+        </style>
+    </body>
+</html>

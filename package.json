@@ -3,7 +3,8 @@
   "version": "0.0.1",
   "description": "A tool to publish Bear's blog posts",
   "scripts": {
-    "build": "node bin/build.js"
+    "build": "node bin/build.js && docker build -f devops/dockerfile -t metrue/blog:latest .",
+    "push": "docker push metrue/blog:latest ."
   },
   "engines": {
     "node": ">=4",

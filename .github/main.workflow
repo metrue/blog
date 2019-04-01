@@ -1,6 +1,6 @@
 workflow "Build Docker Image" {
   on = "push"
-  resolves = ["login", "build"]
+  resolves = ["login", "build", "push"]
 }
 
 action "login" {

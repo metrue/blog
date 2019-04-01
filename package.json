@@ -3,8 +3,8 @@
   "version": "0.0.1",
   "description": "A tool to publish Bear's blog posts",
   "scripts": {
-    "build": "node bin/build.js && docker build -f devops/dockerfile -t ***REMOVED***/blog:latest .",
-    "push": "docker push ***REMOVED***/blog:latest ."
+    "build": "node bin/build.js && docker build -f devops/dockerfile -t metrue/blog:latest .",
+    "push": "docker push metrue/blog:latest ."
   },
   "engines": {
     "node": ">=4",
@@ -15,7 +15,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/***REMOVED***/blog"
+    "url": "git+https://github.com/metrue/blog"
   },
   "keywords": [
     "blog",
@@ -23,12 +23,12 @@
     "vuejs",
     "webpack"
   ],
-  "author": "***REMOVED*** (https://github.com/***REMOVED***)",
+  "author": "metrue (https://github.com/metrue)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/***REMOVED***/blog/issues"
+    "url": "https://github.com/metrue/blog/issues"
   },
-  "homepage": "https://github.com/***REMOVED***/blog",
+  "homepage": "https://github.com/metrue/blog",
   "dependencies": {
     "ejs": "^2.5.5",
     "fs-extra": "^7.0.0"

@@ -242,7 +242,7 @@ fi
 ssh ${target_host} &lt;&lt;END
   docker rmi \$(docker images --filter "dangling=true" -q --no-trunc)
   rm -rf /tmp/Sira
-  git clone git@github.com:***REMOVED***/Sira.git /tmp/Sira
+  git clone git@github.com:metrue/Sira.git /tmp/Sira
   cd /tmp/Sira
   docker-compose -f devops/compose.yml down
   docker-compose -f devops/compose.yml build && docker-compose -f devops/compose.yml up -d

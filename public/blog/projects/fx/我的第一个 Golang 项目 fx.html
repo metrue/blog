@@ -55,7 +55,7 @@ fx = f(input)</code></pre>
 你会得到 <code class='code-inline'>2</code>. 这说明你的函数已经变成了一个服务了。
 
 <h2>fx 如何工作</h2>
-fx 有两个部分组成，fx server 和 fx client, 最开始的 client 和 server 基于 websocket 进行通信，所有的交互基于 websocket message 来进行, 当时选择 websocket 的原因是因为其简单，能够快速验证我们的想法。当项目做完了演示了之后放到了 <a href="https://github.com/***REMOVED***/fx">Github</a> 之后, 收到了很多的反馈，有同学提出了可以采用 RPC 架构来做，gRPC 如雷贯耳很长时间，就是没有机会去实践，但是后来工作一直很忙，所以没有能够及时完成迁移，然后社区的力量是强大的，一个就职于意大利FBK的哥们发Email和我说，他想参与维护 fx, 我简单看了他的Github主页了之后，就直接把他放到了 collaborator   list 去了，后来他直接发了一个很大的 <a href="https://github.com/***REMOVED***/fx/pull/100/files">Pull Request</a>过来，就是用 gRPC 替换了 websocket 的，我当然就很开心的做了merge.
+fx 有两个部分组成，fx server 和 fx client, 最开始的 client 和 server 基于 websocket 进行通信，所有的交互基于 websocket message 来进行, 当时选择 websocket 的原因是因为其简单，能够快速验证我们的想法。当项目做完了演示了之后放到了 <a href="https://github.com/metrue/fx">Github</a> 之后, 收到了很多的反馈，有同学提出了可以采用 RPC 架构来做，gRPC 如雷贯耳很长时间，就是没有机会去实践，但是后来工作一直很忙，所以没有能够及时完成迁移，然后社区的力量是强大的，一个就职于意大利FBK的哥们发Email和我说，他想参与维护 fx, 我简单看了他的Github主页了之后，就直接把他放到了 collaborator   list 去了，后来他直接发了一个很大的 <a href="https://github.com/metrue/fx/pull/100/files">Pull Request</a>过来，就是用 gRPC 替换了 websocket 的，我当然就很开心的做了merge.
 
 所以现在的 fx 是一个基于 gRPC 框架的工具. 提供三个核心功能:
 <pre><code class='code-multiline'>Usage:

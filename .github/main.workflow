@@ -17,6 +17,7 @@ action "build" {
 }
 
 action "push" {
+  needs = ["build", "login"]
   uses = "actions/docker/cli@master"
   args = "push ***REMOVED***/blog:latest"
 }

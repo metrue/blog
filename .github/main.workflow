@@ -1,4 +1,4 @@
-workflow "Build Docker Image" {
+workflow "build and push to dockerhub" {
   on = "push"
   resolves = ["login", "build", "push"]
 }

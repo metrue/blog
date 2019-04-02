@@ -5,10 +5,7 @@ workflow "build and push to dockerhub" {
 
 action "login" {
   uses = "actions/docker/login@8cdf801b322af5f369e00d85e9cf3a7122f49108"
-  env = {
-    DOCKER_USERNAME = "metrue"
-    DOCKER_PASSWORD = "Happy_2014"
-  }
+  secrets = ["DOCKER_USERNAME", "DOCKER_PASSWORD"]
 }
 
 action "build" {
@@ -19,5 +16,6 @@ action "build" {
 action "push" {
   needs = ["build", "login"]
   uses = "actions/docker/cli@master"
+  secrets = ["DOCKER_USERNAME", "DOCKER_PASSWORD"]
   args = "push metrue/blog:latest"
 }

@@ -1,0 +1,68 @@
+# Meta
+description:
+keywords:
+site_desc:
+
+# Navigation
+navigation:
+- name: 首页
+  slug: home
+  url: /
+- name: 归档
+  slug: archives
+  url: /archives
+- name: 关于
+  slug: about
+  url: https://github.com/metrue
+
+# Search
+search:
+  enable: false
+  service: google # google/hexo/algolia/azure/baidu
+  # google
+  google_api_key: AIzaSyAMIoydL742ROhE6lLk9n3hT0pZwbrXD_I
+  google_engine_id: 001858749347000340533:drswradlp64
+  # algolia
+  algolia_app_id:
+  algolia_api_key:
+  algolia_index_name:
+  # azure
+  azure_service_name:
+  azure_index_name:
+  azure_query_key:
+  # baidu
+  baidu_api_id:
+
+# Miscellaneous
+google_analytics: UA-118743071-1
+favicon: /favicon.png
+author_url: https://minghe.me
+
+# Less
+less:
+  compress: true
+
+# use url, not username
+social:
+- slug: email
+  url: mailto:h.minghe@gmail.com
+- slug: github
+  url: https://github.com/metrue
+- slug: twitter
+  url: https://twitter.com/_metrue
+- slug: rss
+	# url:  /atom.xml
+- slug: linkedin
+  url:  https://www.linkedin.com/in/huang-minghe-41ab563a/
+- slug: sina-weibo
+  url: https://weibo.com/metrue
+- slug: tumblr
+  url: # http://artchen.tumblr.com
+- slug: dribbble
+  url: # https://dribbble.com/artchen
+- slug: pinterest
+  url: # https://www.pinterest.com/otakism/
+- slug: instagram
+  url: # https://instagram.com/otakism/
+- slug: behance
+  url: # https://www.behance.net/artchen

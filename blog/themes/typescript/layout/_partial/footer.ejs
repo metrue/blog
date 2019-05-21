@@ -1,0 +1,37 @@
+<footer id="footer" class="clearfix">
+
+  <% if (theme.search.enable === true) { %>
+	<div class="search">
+	  <script>
+      (function() {
+        var cx = '<%= theme.search.google_engine_id %>';
+        var gcse = document.createElement('script');
+        gcse.type = 'text/javascript';
+        gcse.async = true;
+        gcse.src = 'https://cse.google.com/cse.js?cx=' + cx;
+        var s = document.getElementsByTagName('script')[0];
+        s.parentNode.insertBefore(gcse, s);
+      })();
+    </script>
+    <gcse:searchbox-only></gcse:searchbox-only>
+	</div>
+	<% } %>
+
+	<div class="social-wrapper">
+  	<% if (theme.social) { %>
+      <% theme.social.forEach(function(value, key) {
+           if (value.url && value.slug) { %>
+        <a href="<%= value.url %>" class="social <%= value.slug %>"
+          target="_blank" rel="external">
+          <span class="icon icon-<%= value.slug %>"></span>
+        </a>
+      <% } }); %>
+    <% } %>
+  </div>
+
+  <div>Theme <span class="codename">Typescript</span> designed by <a href="http://rakugaki.me/" target="_blank">Art Chen</a>.</div>
+  <div>&copy; <a href="/"><%= config.title %></a></div>
+  <script type="text/javascript" src="https://yoyo-client-production.s3.amazonaws.com/dist/index.js"></script>
+
+</footer>
+

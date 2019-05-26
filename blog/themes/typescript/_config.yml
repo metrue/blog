@@ -50,10 +50,10 @@ social:
   url: https://github.com/metrue
 - slug: twitter
   url: https://twitter.com/_metrue
+# - slug: linkedin
+#   url:  https://www.linkedin.com/in/huang-minghe-41ab563a
 - slug: rss
-	# url:  /atom.xml
-- slug: linkedin
-  url:  https://www.linkedin.com/in/huang-minghe-41ab563a/
+	url:  # /atom.xml
 - slug: sina-weibo
   url: https://weibo.com/metrue
 - slug: tumblr

@@ -13,10 +13,10 @@ categories: interview
 
 这个产品研发团队在上海开分部的时间不长，主要的工作语言是 C# 和 C++，面试的时候可以选择C, C++, C#, 很可惜，这几个语言都不是那么熟悉，所以面试的时候我都用 Golang，问题也不大，当然如果用 C/C++ 就更好了.
 
-* 一面 波兰小哥，hiring manager,  简单的聊简历，聊做过的项目， 然后一道 Easy 级别的算法题 (Array) ，不是很难，但是需要自己设计好测试用例.
-* 二面 波兰小哥，Senior engineer, 一道 Medium 级别的算法题目 (CSP)，不过要写好测试，然后讲解测试过程。
-* 三面 波兰小哥，Senior Engineer, 一道 System Design，和并发相关，分析复杂度，设计好测试用例和测试方法。
-* 终面 波兰小哥，Group Manager, 一个15年的微软老兵，一道 Medium 级别的题吧 (LinkedList)，他口音有点严重，沟通有点吃力。
+* 一面 丹麦小哥，hiring manager,  简单的聊简历，聊做过的项目， 然后一道 Easy 级别的算法题 (Array) ，不是很难，但是需要自己设计好测试用例.
+* 二面 丹麦小哥，Senior engineer, 一道 Medium 级别的算法题目 (CSP)，不过要写好测试，然后讲解测试过程。
+* 三面 丹麦小哥，Senior Engineer, 一道 System Design，和并发相关，分析复杂度，设计好测试用例和测试方法。
+* 终面 丹麦小哥，Group Manager, 一个15年的微软老兵，一道 Medium 级别的题吧 (LinkedList)，他口音有点严重，沟通有点吃力。
 
 ### Amazon (上海的 SDE 职位)
 

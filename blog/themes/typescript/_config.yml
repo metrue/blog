@@ -34,9 +34,9 @@ search:
   baidu_api_id:
 
 # Miscellaneous
-google_analytics: UA-118743071-1
+google_analytics: UA-52720212-8
 favicon: /favicon.png
-author_url: https://minghe.me
+author_url: https://blog.minghe.me
 
 # Less
 less:

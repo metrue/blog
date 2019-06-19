@@ -13,7 +13,7 @@ navigation:
   url: /archives
 - name: 关于
   slug: about
-  url: https://github.com/metrue
+  url: /about
 
 # Search
 search:

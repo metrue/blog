@@ -23,5 +23,5 @@ action "push" {
 action "notify" {
   needs = ["build", "push"]
   uses = "actions/bin/curl@master"
-  args = ["-k", "https://pubhub.minghe.me/notifications/bjsf3mdlrcn9b3k4r11g/create?body=博客构建成功咯&title=BuilBlog&category=GitHub"]
+  args = ["https://pubhub.minghe.me/notifications/bkbj5odlrcn8ngmcb1f0/create?body=BlogBuildOk&title=BuilBlog&category=GitHub"]
 }

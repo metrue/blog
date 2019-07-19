@@ -21,7 +21,7 @@ action "push" {
 }
 
 action "notify" {
-  needs = ["build", "push"]
-  uses = "actions/bin/curl@master"
-  args = ["https://pubhub.minghe.me/notifications/bkbj5odlrcn8ngmcb1f0/create?body=BlogBuildOk&title=BuilBlog&category=GitHub"]
+  uses = "metrue/noticeme-github-action@master"
+  secrets = ["NOTICE_ME_TOKEN"]
+  args = ["BuildNoticeMeGitHubActionDone"]
 }

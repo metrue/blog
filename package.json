@@ -1,0 +1,14 @@
+{
+  "name": "blog.minghe.me",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Content for blog.minghe.me — served by cici.",
+  "scripts": {
+    "dev": "cici --dir data",
+    "build": "cici build",
+    "start": "cici start"
+  },
+  "dependencies": {
+    "cici": "^0.2.0"
+  }
+}

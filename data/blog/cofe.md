@@ -1,398 +1,190 @@
 ---
-title: The Complete Cofe Guide
+title: The Complete cici Guide
 date: 2025-10-06T10:30:00.000Z
 status: draft
 latitude: 37.78297388090404
 longitude: -122.41031261300729
 city: San Francisco
 street: Market Street
-external_discussions:
-  - platform: hackernews
-    url: https://news.ycombinator.com/item?id=example
 ---
 
-[**Cofe**](https://github.com/metrue/cofe) is blog and memo taking app, which fully powered by Github API, and your blog posts and memos are all stored in your own repo, and all the writings are in version control. 
+[**cici**](https://github.com/metrue/cici) is a beautifully simple, git-backed blog & memo app. Your posts and memos live as Markdown and JSON in **your own Git repo** — no database, everything under version control. You install cici from npm and point it at that content.
 
+> **Live example:** this very blog, [blog.minghe.me](https://blog.minghe.me), runs on cici.
 
+> **cici is pure tooling.** Your *content* lives in your repo or folder; cici is the app that serves and edits it. You never fork the cici repo.
 
+## How it works
 
+cici has one content contract and two backends behind it:
 
-**Everything you need to know about setting up, customizing, and mastering Cofe.**
+- **Local files** — point at a folder on disk (`--dir`).
+- **A GitHub repo** — point at `owner/name` (`--repo`), read-only or, with a token, read-write.
 
-Cofe is a beautifully simple blog and memo app that stores everything in your GitHub repository. No databases, no complex setups - just write and publish.
-
-> **Live Example**: See Cofe in action at [blog.minghe.me](https://blog.minghe.me) - a real blog powered by Cofe.
-
-## Quick Start
-
-### 1. GitHub OAuth Setup
-
-First, create a GitHub OAuth App:
-
-1. Go to [GitHub Settings > Developer Settings > OAuth Apps](https://github.com/settings/developers)
-2. Click "New OAuth App"
-3. Fill in the details:
-   - **Application name**: `Cofe Blog`
-   - **Homepage URL**: `http://localhost:3000` (for development)
-   - **Authorization callback URL**: `http://localhost:3000/api/auth/callback/github`
-4. Save your **Client ID** and **Client Secret**
-
-### 2. Environment Setup
-
-Clone the repository and install dependencies:
-
-```bash
-git clone https://github.com/metrue/Cofe.git
-cd Cofe
-npm install
-```
-
-Create your environment variables:
-
-```bash
-# Required for GitHub integration
-export GITHUB_USERNAME='your-github-username'
-export GITHUB_ID='your-github-oauth-client-id'
-export GITHUB_SECRET='your-github-oauth-client-secret'
-
-# Required for authentication
-export NEXTAUTH_SECRET='your-random-secret-string'
-export NEXTAUTH_URL='http://localhost:3000'
-
-# Optional: Analytics (see Analytics section)
-export NEXT_PUBLIC_ANALYTICS_ENABLED=false
-```
-
-### 3. Start Writing
-
-```bash
-npm run dev
-```
-
-Visit `http://localhost:3000`, sign in with GitHub, and start creating!
-
-## Core Features
-
-### Blog Posts
-
-Rich blog posts with full markdown support:
-
-- **Markdown**: Standard and extended syntax
-- **Code Highlighting**: Syntax highlighting for 100+ languages
-- **Math**: LaTeX equations with KaTeX
-- **Images**: Drag & drop or paste images
-- **Location**: Automatic location tagging
-- **Discussions**: Link external discussions from HN, Reddit, V2EX
-
-### Quick Memos
-
-Capture thoughts instantly:
-
-- **Fast Entry**: One-click memo creation
-- **Location Tracking**: Automatic location capture
-- **Like System**: Engage with your content
-- **Masonry Layout**: Beautiful responsive grid
-
-### External Discussions
-
-Connect your posts to external conversations:
-
-```yaml
-external_discussions:
-  - platform: hackernews
-    url: https://news.ycombinator.com/item?id=123456
-  - platform: reddit
-    url: https://reddit.com/r/programming/comments/xyz/
-  - platform: v2ex
-    url: https://v2ex.com/t/123456
-```
-
-Cofe automatically fetches and displays comment counts and links.
-
-## Advanced Configuration
-
-### Analytics Setup
-
-Enable privacy-first analytics with Umami:
-
-1. **Get Umami**: Sign up at [cloud.umami.is](https://cloud.umami.is) or [self-host](https://umami.is/docs)
-2. **Create Website**: Add your domain and get the Website ID
-3. **Configure Environment**:
-
-```bash
-export NEXT_PUBLIC_ANALYTICS_ENABLED=true
-export NEXT_PUBLIC_UMAMI_WEBSITE_ID=your-website-id
-
-# Optional: Custom Umami instance
-export NEXT_PUBLIC_UMAMI_SCRIPT_URL=https://your-umami.com/script.js
-
-# Optional: Domain restrictions
-export NEXT_PUBLIC_UMAMI_DOMAINS=yourdomain.com,www.yourdomain.com
-```
-
-### Site Configuration
-
-Customize your site in `lib/siteConfig.ts`:
-
-```typescript
-export const getSiteConfig = () => ({
-  title: 'Your Blog Name',
-  description: 'Your blog description',
-  author: {
-    name: 'Your Name',
-    email: 'your@email.com'
-  },
-  social: {
-    twitter: 'yourusername',
-    github: 'yourusername'
-  },
-  keywords: ['blog', 'tech', 'programming']
-})
-```
-
-### Custom Styling
-
-Cofe uses Tailwind CSS. Customize styles in:
-
-- `app/globals.css` - Global styles
-- `tailwind.config.js` - Tailwind configuration
-- Individual components for specific customizations
-
-## Content Management
-
-### File Structure
-
-Cofe stores content in your GitHub repository:
+Content lives under a **`data/`** folder:
 
 ```
 data/
-├── blog/           # Blog posts (.md files)
-├── memos.json      # All memos
-├── links.json      # External links
-└── likes.json      # Like data
+  blog/            # one <slug>.md per post (front-matter + Markdown)
+  memos.json       # short-form memos
+  site-config.json # title, author, social links
+  highlights/      # one <slug>.json per post (optional)
+  likes.json       # like counts (optional)
+  assets/          # images uploaded from the editor
 ```
 
-### Blog Post Format
+## Run it locally
 
-Blog posts use frontmatter:
+No clone, no build — just `npx`:
+
+```bash
+# Serve AND edit local content. --dir points at the folder holding blog/ (i.e. data/):
+npx cici --dir ./data
+
+# Serve a GitHub content repo (reads its data/ automatically, read-only):
+npx cici --repo owner/name
+
+# ...with a token, edit it too — /editor commits straight back to the repo:
+npx cici --repo owner/name --token ghp_xxx --port 4000
+```
+
+Open `http://localhost:3000`, and `/editor` to write. In `--dir` mode changes save to disk; with a token they're committed to your repo.
+
+## Deploy on Vercel
+
+The thing you deploy is your **content repo** — it just depends on cici. No app source, no fork.
+
+**1.** Add a `package.json` at the repo root (next to `data/`):
+
+```json
+{
+  "private": true,
+  "scripts": { "build": "cici build" },
+  "dependencies": { "cici": "^0.4.2" }
+}
+```
+
+**2.** Add `vercel.json` so Vercel serves cici's output instead of running its own Next build:
+
+```json
+{ "framework": null, "buildCommand": "cici build" }
+```
+
+`cici build` emits [Vercel's Build Output API](https://vercel.com/docs/build-output-api) — cici's prebuilt server as a single function plus static assets — which Vercel serves directly.
+
+**3.** Set environment variables on the Vercel project:
+
+| Variable | Value |
+|---|---|
+| `CICI_REPO` | `owner/name` of your content repo |
+| `CICI_TOKEN` | GitHub token with **Contents: read & write** on that repo (renders a private repo and powers `/editor`) |
+| `NEXTAUTH_SECRET` | any random string |
+| `NEXTAUTH_URL` | your site URL, e.g. `https://blog.example.com` |
+| `GITHUB_ID` / `GITHUB_SECRET` | a GitHub OAuth app for `/editor` sign-in (callback `<site>/api/auth/callback/github`) |
+
+Deploy. cici reads your content at request time, so anything you write — via `/editor` or a plain `git push` to the content repo — shows up without a redeploy.
+
+> **Not on Vercel?** Any Node host works (Railway, Render, Fly, a VPS, Docker): skip `cici build` and run `cici start` with the same `CICI_*` env — it boots the server directly.
+
+### GitHub OAuth app
+
+`/editor` sign-in uses GitHub OAuth. Create one at [Settings → Developer settings → OAuth Apps](https://github.com/settings/developers):
+
+- **Homepage URL:** your site (or `http://localhost:3000` for local)
+- **Authorization callback URL:** `<site>/api/auth/callback/github`
+
+Save the **Client ID** / **Client Secret** as `GITHUB_ID` / `GITHUB_SECRET`.
+
+## Writing content
+
+### Blog posts
+
+One Markdown file per post under `data/blog/<slug>.md`, with front-matter:
 
 ```yaml
 ---
 title: Your Post Title
-date: 2025-10-06T10:30:00.000Z
-latitude: 37.7749
-longitude: -122.4194
-city: San Francisco
+date: 2026-07-21T10:30:00.000Z
+status: published        # or "draft"
+city: San Francisco      # optional location
 street: Market Street
-external_discussions:
+external_discussions:    # optional — link HN / Reddit / V2EX threads
   - platform: hackernews
-    url: https://news.ycombinator.com/item?id=123
+    url: https://news.ycombinator.com/item?id=123456
 ---
 
-Your markdown content here...
+Your Markdown here — code highlighting, LaTeX math, images, all supported.
 ```
 
-### Memo Format
+### Memos
 
-Memos are stored as JSON objects:
+Short-form entries in `data/memos.json`:
 
 ```json
 {
   "id": "1728123456789",
-  "content": "Your memo content with **markdown**",
-  "timestamp": "2025-10-06T10:30:00.000Z",
-  "latitude": 37.7749,
-  "longitude": -122.4194,
-  "city": "San Francisco",
-  "street": "Market Street"
+  "content": "A quick thought with **Markdown**",
+  "timestamp": "2026-07-21T10:30:00.000Z",
+  "city": "San Francisco"
 }
 ```
 
-## Deployment
+### Site config
 
-### Vercel (Recommended)
+Your title, author, and social links live in `data/site-config.json`:
 
-1. **Deploy**: Click the deploy button or connect your GitHub repo
-2. **Environment Variables**: Add all your environment variables
-3. **Domain**: Configure your custom domain
-4. **SSL**: Automatic HTTPS setup
-
-### Other Platforms
-
-Cofe works on any platform that supports Next.js:
-
-- **Netlify**: Use the Next.js plugin
-- **Railway**: Direct deployment support
-- **DigitalOcean App Platform**: Node.js app
-- **Self-hosted**: Docker or Node.js server
-
-## API Reference
-
-### GraphQL Endpoints
-
-Cofe provides a GraphQL API at `/api/graphql`:
-
-#### Queries
-
-```graphql
-# Get all blog posts
-query {
-  blogPosts {
-    id
-    title
-    content
-    date
-    city
-    street
-  }
-}
-
-# Get specific blog post
-query {
-  blogPost(id: "post-id") {
-    id
-    title
-    content
-    discussions {
-      platform
-      url
-      count
-    }
-  }
-}
-
-# Get all memos
-query {
-  memos {
-    id
-    content
-    timestamp
-    city
-    street
-  }
-}
-
-# Get like information
-query {
-  getLikes(itemType: "blog", id: "post-id") {
-    count
-    countries
-    userLiked
-  }
+```json
+{
+  "title": "Your Blog",
+  "description": "Thoughts and notes",
+  "author": { "name": "Your Name", "bio": "…", "location": "Earth" },
+  "social": { "github": "yourname", "twitter": "yourname" },
+  "keywords": ["blog", "notes"]
 }
 ```
 
-#### Mutations
+## Features
+
+- **Rich posts** — Markdown, syntax highlighting (100+ languages), KaTeX math, drag-and-drop images
+- **Quick memos** — instant capture with optional location, likes, masonry layout
+- **External discussions** — auto-fetch comment links from Hacker News, Reddit, V2EX
+- **Your data, versioned** — everything is Markdown/JSON in your Git repo
+- **Mobile-first, fast** — static where possible, dynamic where it counts
+
+## GraphQL API
+
+cici exposes a GraphQL endpoint at `/api/graphql`:
 
 ```graphql
-# Create blog post
-mutation {
-  createBlogPost(input: {
-    title: "New Post"
-    content: "Content here..."
-    latitude: 37.7749
-    longitude: -122.4194
-    city: "San Francisco"
-    street: "Market Street"
-  }) {
-    id
-    title
-  }
-}
+query { blogPosts { id title date } }
+query { blogPost(id: "slug") { title content discussions { platform url count } } }
+query { memos { id content timestamp } }
+```
 
-# Create memo
-mutation {
-  createMemo(input: {
-    content: "Quick thought..."
-    latitude: 37.7749
-    longitude: -122.4194
-    city: "San Francisco"
-  }) {
-    id
-    content
-  }
-}
+Writes (create post / create memo / toggle like) are available when authenticated.
 
-# Toggle like
-mutation {
-  toggleLike(itemType: "blog", id: "post-id") {
-    liked
-    count
-    countries
-  }
-}
+## Analytics (optional)
+
+Privacy-first analytics via [Umami](https://umami.is):
+
+```bash
+NEXT_PUBLIC_ANALYTICS_ENABLED=true
+NEXT_PUBLIC_UMAMI_WEBSITE_ID=your-website-id
+# optional self-host / domain scoping:
+NEXT_PUBLIC_UMAMI_SCRIPT_URL=https://your-umami.com/script.js
+NEXT_PUBLIC_UMAMI_DOMAINS=yourdomain.com
 ```
 
 ## Troubleshooting
 
-### Common Issues
+- **Blog is empty on deploy** — check `CICI_REPO` points at your content repo and `CICI_TOKEN` has **Contents: read & write** on it. A `401` means the token string is wrong/expired; a `404` means the repo isn't in the token's scope.
+- **`/editor` sign-in fails** — verify the OAuth callback URL, `NEXTAUTH_SECRET`, and `NEXTAUTH_URL` match your domain.
+- **Images not loading** — cici uses Vercel Image Optimization on deploy; for other hosts, `cici start` serves images through the app.
 
-**Authentication not working?**
-- Check your GitHub OAuth callback URL
-- Verify NEXTAUTH_SECRET is set
-- Ensure NEXTAUTH_URL matches your domain
+## Migrating in
 
-**Images not loading?**
-- Verify GitHub token has repo access
-- Check image URLs are publicly accessible
-- Ensure proper file permissions
-
-**Build failures?**
-- Run `npm run lint` and fix any issues
-- Check `npx tsc --noEmit` for TypeScript errors
-- Verify all environment variables are set
-
-**Location not working?**
-- Enable location permissions in browser
-- Check HTTPS requirement for geolocation
-- Verify network connectivity for reverse geocoding
-
-### Getting Help
-
-1. **Check Issues**: [GitHub Issues](https://github.com/metrue/Cofe/issues)
-2. **Discussions**: Use the external discussions feature
-3. **Contributing**: See [AGENTS.md](./AGENTS.md) for development guidelines
-
-## Migration
-
-### From Jekyll
-
-1. Copy markdown files to `data/blog/`
-2. Update frontmatter format
-3. Move images to GitHub repository
-4. Update image URLs
-
-### From Hugo
-
-1. Convert content to standard markdown
-2. Update frontmatter dates to ISO format
-3. Migrate static assets
-4. Configure redirects if needed
-
-### From Ghost/WordPress
-
-1. Export content to markdown
-2. Clean up HTML remnants
-3. Convert featured images
-4. Set up URL redirects
-
-## Performance Tips
-
-1. **Image Optimization**: Use WebP format when possible
-2. **Caching**: Enable Vercel Edge Caching
-3. **Analytics**: Use minimal tracking for better performance
-4. **Content**: Keep memo count reasonable for faster loading
-
-## Security
-
-- **Authentication**: GitHub OAuth only
-- **Data Storage**: Your GitHub repository
-- **Privacy**: No external databases
-- **Analytics**: Privacy-first Umami integration
-- **HTTPS**: Required in production
+Coming from Jekyll / Hugo / Ghost / WordPress? Export posts to Markdown, drop them in `data/blog/`, set the front-matter (`title`, `date`, `status`), move images into `data/assets/`, and point cici at the folder.
 
 ---
 
-**That's everything!** Cofe is designed to be simple yet powerful. Start with the basics and customize as you grow.
-
-Questions? Open an issue or start a discussion. Happy writing! ☕
+That's cici: your words, in your repo, served anywhere. Questions or ideas? Open an issue on [GitHub](https://github.com/metrue/cici/issues). Happy writing. ☕

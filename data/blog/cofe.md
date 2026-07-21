@@ -60,7 +60,7 @@ The thing you deploy is your **content repo** — it just depends on cici. No ap
 {
   "private": true,
   "scripts": { "build": "cici build" },
-  "dependencies": { "cici": "^0.4.2" }
+  "dependencies": { "cici": "^0.4.3" }
 }
 ```
 
@@ -77,10 +77,12 @@ The thing you deploy is your **content repo** — it just depends on cici. No ap
 | Variable | Value |
 |---|---|
 | `CICI_REPO` | `owner/name` of your content repo |
-| `CICI_TOKEN` | GitHub token with **Contents: read & write** on that repo (renders a private repo and powers `/editor`) |
-| `NEXTAUTH_SECRET` | any random string |
-| `NEXTAUTH_URL` | your site URL, e.g. `https://blog.example.com` |
 | `GITHUB_ID` / `GITHUB_SECRET` | a GitHub OAuth app for `/editor` sign-in (callback `<site>/api/auth/callback/github`) |
+| `NEXTAUTH_SECRET` | any random string (signs the session) |
+| `NEXTAUTH_URL` | your site URL, e.g. `https://blog.example.com` |
+| `CICI_TOKEN` | **optional — private repos only.** A GitHub token with **Contents: read & write**. |
+
+If your content repo is **public**, you don't need a token at all: cici reads it anonymously, and `/editor` commits with your own GitHub sign-in — so reads work for everyone and only you (whoever can push to the repo) can publish. Add `CICI_TOKEN` only when the repo is private.
 
 Deploy. cici reads your content at request time, so anything you write — via `/editor` or a plain `git push` to the content repo — shows up without a redeploy.
 
@@ -177,7 +179,7 @@ NEXT_PUBLIC_UMAMI_DOMAINS=yourdomain.com
 
 ## Troubleshooting
 
-- **Blog is empty on deploy** — check `CICI_REPO` points at your content repo and `CICI_TOKEN` has **Contents: read & write** on it. A `401` means the token string is wrong/expired; a `404` means the repo isn't in the token's scope.
+- **Blog is empty on deploy** — check `CICI_REPO` points at your content repo. If the repo is **private**, also confirm `CICI_TOKEN` has **Contents: read & write** on it (a `401` means the token string is wrong/expired; a `404` means the repo isn't in the token's scope). A **public** repo needs no token.
 - **`/editor` sign-in fails** — verify the OAuth callback URL, `NEXTAUTH_SECRET`, and `NEXTAUTH_URL` match your domain.
 - **Images not loading** — cici uses Vercel Image Optimization on deploy; for other hosts, `cici start` serves images through the app.
 

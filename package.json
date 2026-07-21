@@ -9,6 +9,6 @@
     "start": "cici start"
   },
   "dependencies": {
-    "cici": "^0.4.2"
+    "cici": "^0.4.3"
   }
 }

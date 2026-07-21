@@ -45,3 +45,5 @@ content from this repo at request time over the GitHub API.
 > `npm install` / `cici build` here will not resolve.
 
 See `.env.example`.
+
+<!-- deploy-trigger: verifying content-repo build on Vercel -->

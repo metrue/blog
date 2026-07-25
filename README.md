@@ -1,6 +1,6 @@
 # blog.minghe.me — content
 
-Private content repository for **blog.minghe.me**, served by [cici](https://github.com/metrue/cici).
+Public content repository for **blog.minghe.me**, served by [cici](https://github.com/metrue/cici).
 
 This repo holds *only* content. The blog application (Next.js app, runtime, CLI)
 lives in the public `metrue/cici` package and is consumed as a dependency.
@@ -36,13 +36,13 @@ content from this repo at request time over the GitHub API.
 
 - **Build command:** `cici build`
 - **Env:**
-  - `CICI_REPO=metrue/blog` — content source (this repo)
-  - `CICI_TOKEN=…` — token with read+write on this private repo (server-side reads + `/editor` writes)
+  - `CICI_REPO=metrue/blog` — content source (this repo; public → no token needed to read)
   - `NEXTAUTH_SECRET`, `NEXTAUTH_URL=https://blog.minghe.me`
-  - `GITHUB_ID`, `GITHUB_SECRET` — GitHub OAuth for `/editor` sign-in
+  - `GITHUB_ID`, `GITHUB_SECRET` — GitHub OAuth; only the repo owner (from `CICI_REPO`) can edit
+  - `GITHUB_USERNAME` — optional; the owner is otherwise taken from `CICI_REPO`
+  - **Do not** set `CICI_TOKEN` here — a shared server token would let any visitor write; cici ≥ 0.6.0 ignores it in hosted OAuth mode. It's only for the localhost CLI (`npx cici --repo … --token …`).
 
-> Requires cici ≥ 0.2.0 (adds the `cici build` command). Until that release,
-> `npm install` / `cici build` here will not resolve.
+> Requires cici ≥ 0.6.0 (owner-gated OAuth writes; `CICI_TOKEN` ignored on hosted deploys).
 
 See `.env.example`.
 

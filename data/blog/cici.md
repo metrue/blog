@@ -1,7 +1,7 @@
 ---
 title: The Complete cici Guide
 date: 2025-10-06T10:30:00.000Z
-status: draft
+status: published
 latitude: 37.78297388090404
 longitude: -122.41031261300729
 city: San Francisco

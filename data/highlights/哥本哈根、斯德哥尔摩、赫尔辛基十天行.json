@@ -1,0 +1,33 @@
+{
+  "postId": "哥本哈根、斯德哥尔摩、赫尔辛基十天行",
+  "highlights": [
+    {
+      "id": "hl_206eef46-8145-4fe1-bf4e-9e507fa2d06a",
+      "anchor": {
+        "startOffset": 495,
+        "endOffset": 528,
+        "exact": "| 合计     |  ≈ ¥16,244 + 30000  |\n",
+        "prefix": "🇸🇪 斯德哥尔摩¥2,792🇫🇮 赫尔辛基¥5,747\n",
+        "suffix": "哥本哈根\n自己确实文化有限，对于丹麦，脑海里真的只知道一个人 ("
+      },
+      "thread": [
+        {
+          "id": "cm_97e9ec70-a349-4982-96ae-d1247087f803",
+          "parentId": null,
+          "body": "我们住阿姆斯特丹，所以国内飞的朋友可能会贵一些。",
+          "authorName": "metrue",
+          "fingerprint": "d4914f5cc642_US_web_04de8288",
+          "country": "US",
+          "platform": "web",
+          "reactions": {},
+          "resolved": false,
+          "createdAt": "2026-08-14T16:50:47.319Z",
+          "hidden": false
+        }
+      ],
+      "resolved": false,
+      "createdAt": "2026-08-14T16:50:47.319Z"
+    }
+  ],
+  "schemaVersion": 1
+}
